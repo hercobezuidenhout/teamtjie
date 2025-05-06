@@ -1,2 +1,3 @@
-# teamtjie
-Truly know your team's health
+# 🧶 Teamtjie
+
+Some cool documentation will be here.

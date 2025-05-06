@@ -1,33 +1,33 @@
-'use client';
+'use client'
 
-import { ConfirmationModal } from "@/lib/modals/ConfirmationModal/ConfirmationModal";
-import { useDeleteScopeMutation } from "@/services/scope/mutations/use-delete-scope-mutation";
-import { Card, CardHeader, Heading, CardBody, FormControl, FormLabel, Input, FormHelperText, Text, CardFooter, HStack, Button, useDisclosure, useToast } from "@chakra-ui/react";
-import { Scope } from "@prisma/client";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { ConfirmationModal } from "@/lib/modals/ConfirmationModal/ConfirmationModal"
+import { useDeleteScopeMutation } from "@/services/scope/mutations/use-delete-scope-mutation"
+import { Card, CardHeader, Heading, CardBody, FormControl, FormLabel, Input, FormHelperText, Text, CardFooter, HStack, Button, useDisclosure, useToast } from "@chakra-ui/react"
+import { Scope } from "@prisma/client"
+import { useRouter } from "next/navigation"
+import { useState } from "react"
 
 interface DeleteTeamProps {
-    scope: Scope;
+    scope: Scope
 }
 
 export const DeleteTeam = ({ scope }: DeleteTeamProps) => {
-    const { mutateAsync: deleteScope, isPending } = useDeleteScopeMutation(scope.id);
-    const { isOpen, onOpen, onClose } = useDisclosure();
-    const [teamName, setTeamName] = useState('');
-    const toast = useToast();
-    const router = useRouter();
+    const { mutateAsync: deleteScope, isPending } = useDeleteScopeMutation(scope.id)
+    const { isOpen, onOpen, onClose } = useDisclosure()
+    const [teamName, setTeamName] = useState('')
+    const toast = useToast()
+    const router = useRouter()
 
     const handleCancel = () => {
-        setTeamName('');
-        onClose();
-    };
+        setTeamName('')
+        onClose()
+    }
 
     const handleConfirm = async () => {
-        setTeamName('');
-        onClose();
+        setTeamName('')
+        onClose()
 
-        await deleteScope();
+        await deleteScope()
 
         toast({
             title: 'Team Deleted',
@@ -35,17 +35,17 @@ export const DeleteTeam = ({ scope }: DeleteTeamProps) => {
             variant: 'success',
             duration: 2000,
             icon: '🤘'
-        });
+        })
 
-        localStorage.clear();
-        router.push('/');
-    };
+        localStorage.clear()
+        router.push('/')
+    }
 
     return (
         <>
             <Card>
                 <CardHeader>
-                    <Heading>Delete team</Heading>
+                    <Heading size="md">Delete team</Heading>
                     <Text mt={2}>
                         This cannot be undone. Once the team has been deleted, all team and user data will be lost.
                     </Text>
@@ -65,5 +65,5 @@ export const DeleteTeam = ({ scope }: DeleteTeamProps) => {
             </Card>
             <ConfirmationModal isOpen={isOpen} onCancel={handleCancel} onConfirm={handleConfirm} />
         </>
-    );
-};
+    )
+}

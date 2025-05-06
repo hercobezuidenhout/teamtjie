@@ -33,7 +33,7 @@ export const UserNotificationPreferences = ({ user }: UserNotificationPreference
     return (
         <Card>
             <CardHeader>
-                <Heading>Notification Preferences</Heading>
+                <Heading size="md">Notification Preferences</Heading>
             </CardHeader>
             <CardBody py={0}>
                 <VStack alignItems="stretch" gap={5}>

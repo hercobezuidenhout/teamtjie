@@ -1,11 +1,11 @@
-'use client';
+'use client'
 
-import { Button, Heading, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalOverlay, Text } from "@chakra-ui/react";
+import { Button, Heading, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalOverlay, Text } from "@chakra-ui/react"
 
 interface ConfirmationModalProps {
-    isOpen: boolean;
-    onCancel: () => void;
-    onConfirm: () => void;
+    isOpen: boolean
+    onCancel: () => void
+    onConfirm: () => void
 }
 
 export const ConfirmationModal = ({ isOpen, onCancel, onConfirm }: ConfirmationModalProps) => (
@@ -13,7 +13,7 @@ export const ConfirmationModal = ({ isOpen, onCancel, onConfirm }: ConfirmationM
         <ModalOverlay />
         <ModalContent backgroundColor="chakra-card-bg">
             <ModalHeader>
-                <Heading>Confirm</Heading>
+                <Heading size="md">Confirm</Heading>
             </ModalHeader>
             <ModalBody minH="fit-content">
                 <Text>Are you sure you want to continue?</Text>
@@ -24,4 +24,4 @@ export const ConfirmationModal = ({ isOpen, onCancel, onConfirm }: ConfirmationM
             </ModalFooter>
         </ModalContent>
     </Modal>
-);
+)

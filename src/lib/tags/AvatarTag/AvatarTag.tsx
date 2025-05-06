@@ -1,4 +1,4 @@
-import { useMultiStyleConfig } from '@chakra-ui/system';
+import { useMultiStyleConfig } from '@chakra-ui/system'
 import {
   Avatar,
   BoxProps,
@@ -6,14 +6,13 @@ import {
   Skeleton,
   Text,
   Tooltip,
-} from '@chakra-ui/react';
-import { AvatarStub } from '@/models';
-import * as CSS from 'csstype';
+} from '@chakra-ui/react'
+import { AvatarStub } from '@/models'
 
 interface AvatarTagProps extends BoxProps {
-  avatar?: AvatarStub<string | number>;
-  size?: 'sm' | 'md' | 'lg' | 'xl';
-  hideLabel?: boolean;
+  avatar?: AvatarStub<string | number>
+  size?: 'sm' | 'md' | 'lg' | 'xl'
+  hideLabel?: boolean
 }
 
 export const AvatarTag = ({
@@ -22,21 +21,21 @@ export const AvatarTag = ({
   hideLabel,
   ...rest
 }: AvatarTagProps) => {
-  const styles = useMultiStyleConfig('AvatarTag', { size });
-  const name = avatar?.name ?? 'John Doe';
-  const avatarName = avatar?.name ?? '?';
-  const isLoaded = !!avatar;
+  const styles = useMultiStyleConfig('AvatarTag', { size })
+  const name = avatar?.name ?? 'John Doe'
+  const avatarName = avatar?.name ?? '?'
+  const isLoaded = !!avatar
 
   return (
     <HStack
-      maxW={styles.container['maxW'] as string | number}
+      maxW="full"
       __css={styles.container}
       {...rest}
     >
       {hideLabel ? (
         <Tooltip label={name} borderRadius="md" backgroundColor="chakra-subtle-bg" color="chakra-subtle-text">
           <Avatar
-            size={styles.avatar['size']}
+            size="md"
             name={avatarName}
             src={avatar?.image ?? undefined}
           />
@@ -44,13 +43,13 @@ export const AvatarTag = ({
       ) : (
         <>
           <Avatar
-            size={styles.avatar['size']}
+            size="sm"
             name={avatarName}
             src={avatar?.image ?? undefined}
           />
           <Skeleton isLoaded={isLoaded} overflow="hidden">
             <Text
-              fontSize={styles.label['fontSize'] as CSS.Property.FontSize}
+              fontSize="small"
               isTruncated
             >
               {name}
@@ -59,5 +58,5 @@ export const AvatarTag = ({
         </>
       )}
     </HStack>
-  );
-};
+  )
+}

@@ -17,7 +17,7 @@ export const PostsChart = ({ data, isLoading }: PostChartProps) => {
             <CardHeader>
                 <HStack>
                     <VStack align="stretch">
-                        <Heading>Post Usage</Heading>
+                        <Heading size="md">Post Usage</Heading>
                         <Text color="chakra-subtle-text">In the past week</Text>
                     </VStack>
                 </HStack>

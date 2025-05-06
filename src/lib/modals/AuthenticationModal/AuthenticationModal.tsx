@@ -9,13 +9,13 @@ import {
   ModalHeader,
   ModalOverlay,
   ModalProps,
-} from '@chakra-ui/react';
-import { AuthenticationForm } from '../../forms/AuthenticationForm/AuthenticationForm';
+} from '@chakra-ui/react'
+import { AuthenticationForm } from '../../forms/AuthenticationForm/AuthenticationForm'
 
 interface AuthenticationModalProps
   extends Pick<ModalProps, 'onClose' | 'isOpen'> {
-  title?: string;
-  redirectTo?: string;
+  title?: string
+  redirectTo?: string
 }
 
 export const AuthenticationModal = ({
@@ -29,7 +29,7 @@ export const AuthenticationModal = ({
       <ModalOverlay />
       <ModalContent>
         <ModalHeader>
-          <Heading>{title || 'Welcome back!'}</Heading>
+          <Heading size="md">{title || 'Welcome back!'}</Heading>
         </ModalHeader>
         <ModalCloseButton />
         <ModalBody>
@@ -37,5 +37,5 @@ export const AuthenticationModal = ({
         </ModalBody>
       </ModalContent>
     </Modal>
-  );
-};
+  )
+}

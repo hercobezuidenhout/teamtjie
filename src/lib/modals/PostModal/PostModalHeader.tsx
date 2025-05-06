@@ -1,9 +1,9 @@
-import { ModalHeader, HStack, Avatar, Heading } from "@chakra-ui/react";
-import { Scope } from "@prisma/client";
+import { ModalHeader, HStack, Avatar, Heading } from "@chakra-ui/react"
+import { Scope } from "@prisma/client"
 
 interface PostModalHeaderProps {
     scope: Scope,
-    onChangeScope: () => void;
+    onChangeScope: () => void
 }
 
 export const PostModalHeader = ({ scope }: PostModalHeaderProps) => (
@@ -11,8 +11,8 @@ export const PostModalHeader = ({ scope }: PostModalHeaderProps) => (
         <HStack justifyContent="space-between">
             <HStack>
                 <Avatar size="sm" src={scope.image ?? undefined} name={scope.name} />
-                <Heading>{scope.name}</Heading>
+                <Heading size="md">{scope.name}</Heading>
             </HStack>
         </HStack>
     </ModalHeader>
-);
+)

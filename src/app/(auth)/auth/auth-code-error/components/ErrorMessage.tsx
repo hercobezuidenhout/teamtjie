@@ -11,7 +11,7 @@ export const ErrorMessage = () => {
       <Card>
         <CardBody textAlign="center">
           <VStack spacing={8}>
-            <Heading>Something went wrong!</Heading>
+            <Heading size="md">Something went wrong!</Heading>
             <Text maxWidth="md">
               We could not log you in due to an unknown error. Please try again.
               If the error persists, please reach out to support@teamtjie.app.

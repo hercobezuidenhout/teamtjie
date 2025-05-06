@@ -1,25 +1,25 @@
-'use client';
+'use client'
 
-import { VStackStretch } from "@/lib/layout/VStackStretch";
-import { UpdateUserDto } from "@/models";
-import { useUpdateUserMutation } from "@/services/user/mutations/use-update-user-mutation";
-import { Button, Card, CardBody, CardFooter, CardHeader, FormControl, FormLabel, HStack, Heading, Input, Textarea, useToast } from "@chakra-ui/react";
-import { User } from "@prisma/client";
-import { SubmitHandler, useForm } from "react-hook-form";
+import { VStackStretch } from "@/lib/layout/VStackStretch"
+import { UpdateUserDto } from "@/models"
+import { useUpdateUserMutation } from "@/services/user/mutations/use-update-user-mutation"
+import { Button, Card, CardBody, CardFooter, CardHeader, FormControl, FormLabel, HStack, Heading, Input, Textarea, useToast } from "@chakra-ui/react"
+import { User } from "@prisma/client"
+import { SubmitHandler, useForm } from "react-hook-form"
 
 interface ProfileSettings {
-    user: User;
+    user: User
 }
 
 export const EditProfileSettings = ({ user }: ProfileSettings) => {
-    const { mutateAsync, isPending } = useUpdateUserMutation();
-    const toast = useToast();
+    const { mutateAsync, isPending } = useUpdateUserMutation()
+    const toast = useToast()
     const { register, handleSubmit } = useForm<UpdateUserDto>({
         values: { ...user }
-    });
+    })
 
     const onSubmit: SubmitHandler<UpdateUserDto> = async (data) => {
-        await mutateAsync(data);
+        await mutateAsync(data)
 
         toast({
             title: 'Profile updated',
@@ -27,13 +27,13 @@ export const EditProfileSettings = ({ user }: ProfileSettings) => {
             variant: 'success',
             duration: 2000,
             icon: '🤘'
-        });
-    };
+        })
+    }
 
     return (
         <Card>
             <CardHeader>
-                <Heading>Edit Profile</Heading>
+                <Heading size="md">Edit Profile</Heading>
             </CardHeader>
             <CardBody pt={0} pb={0}>
                 <VStackStretch>
@@ -53,5 +53,5 @@ export const EditProfileSettings = ({ user }: ProfileSettings) => {
                 </HStack>
             </CardFooter>
         </Card>
-    );
-};
+    )
+}

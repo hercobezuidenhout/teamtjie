@@ -11,7 +11,7 @@ export const DeactivatedMessage = () => {
       <Card>
         <CardBody textAlign="center">
           <VStack spacing={8}>
-            <Heading>Account Deactivated</Heading>
+            <Heading size="md">Account Deactivated</Heading>
             <Text maxWidth="md">
               Your account has been deactivated.
               If this was an error please reach out to support@teamtjie.app.

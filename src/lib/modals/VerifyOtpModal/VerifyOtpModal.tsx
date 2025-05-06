@@ -52,7 +52,7 @@ export const VerifyOtpModal = ({ isOpen, onClose, email }: VerifyOtpModalProps) 
                 <ModalBody justifyContent="space-around">
                     <VStack justifyContent="space-around" alignItems="stretch">
                         <VStack alignItems="stretch" gap={5} textAlign="center" height="fit-content">
-                            <Heading>Verify Email</Heading>
+                            <Heading size="md">Verify Email</Heading>
                             <Text>An OTP has been sent to {email}.</Text>
                             <HStack width="fit-content" margin="auto">
                                 <PinInput value={otp} onChange={handleOtpChange}>

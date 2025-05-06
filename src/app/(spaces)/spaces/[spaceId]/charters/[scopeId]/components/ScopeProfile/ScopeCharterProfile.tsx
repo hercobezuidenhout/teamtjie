@@ -1,18 +1,18 @@
-'use client';
+'use client'
 
-import { Box, Card, CardBody, HStack, Heading, VStack } from "@chakra-ui/react";
-import { ScopeLogo } from "./ScopeLogo";
-import { EditScopeProfileButton } from "./EditScopeProfileButton";
-import { useScopeQuery } from "@/services/scope/queries/use-scope-query";
-import { Can } from "@/lib/casl/Can";
-import { subject } from "@casl/ability";
+import { Box, Card, CardBody, HStack, Heading, VStack } from "@chakra-ui/react"
+import { ScopeLogo } from "./ScopeLogo"
+import { EditScopeProfileButton } from "./EditScopeProfileButton"
+import { useScopeQuery } from "@/services/scope/queries/use-scope-query"
+import { Can } from "@/lib/casl/Can"
+import { subject } from "@casl/ability"
 
 interface ScopeCharterProfileProps {
-    id: number;
+    id: number
 }
 
 export const ScopeCharterProfile = ({ id }: ScopeCharterProfileProps) => {
-    const { data: scope } = useScopeQuery(id);
+    const { data: scope } = useScopeQuery(id)
 
     return scope && (
         <Card>
@@ -23,7 +23,7 @@ export const ScopeCharterProfile = ({ id }: ScopeCharterProfileProps) => {
                             <ScopeLogo scope={scope} />
                         </Box>
                         <VStack alignItems="stretch" gap={0}>
-                            <Heading>{scope.name}</Heading>
+                            <Heading size="md">{scope.name}</Heading>
                         </VStack>
                     </HStack>
                     <Can I="edit" this={subject('Scope', { id: scope.id })}>
@@ -32,5 +32,5 @@ export const ScopeCharterProfile = ({ id }: ScopeCharterProfileProps) => {
                 </HStack>
             </CardBody>
         </Card>
-    );
-};
+    )
+}

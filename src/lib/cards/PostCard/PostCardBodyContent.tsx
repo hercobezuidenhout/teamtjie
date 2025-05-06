@@ -32,7 +32,7 @@ export const PostCardBodyContent = ({
       </Box>
       <VStack align="stretch" gap={0}>
         <HStack>
-          <Heading>
+          <Heading size="md">
             {issuedTo.name}
           </Heading>
           <Text>{title}</Text>

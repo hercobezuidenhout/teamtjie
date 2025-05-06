@@ -1,19 +1,19 @@
-'use client';
+'use client'
 
-import { Card, CardBody, Heading, VStack } from "@chakra-ui/react";
-import { ScopeValue } from "./ScopeValue";
-import { useScopeValuesQuery } from "@/services/scope/queries/use-scope-values-query";
+import { Card, CardBody, Heading, VStack } from "@chakra-ui/react"
+import { ScopeValue } from "./ScopeValue"
+import { useScopeValuesQuery } from "@/services/scope/queries/use-scope-values-query"
 
 interface ScopeValuesProps {
-    id: number;
+    id: number
 }
 
 export const ScopeValues = ({ id }: ScopeValuesProps) => {
-    const { data: values, isLoading } = useScopeValuesQuery(id);
+    const { data: values, isLoading } = useScopeValuesQuery(id)
 
     return !isLoading && values && values.length > 0 ? (
         <>
-            <Heading variant="menu-heading">Values</Heading>
+            <Heading size="md">Values</Heading>
             <Card>
                 <CardBody>
                     <VStack align="stretch" whiteSpace="break-spaces">
@@ -22,5 +22,5 @@ export const ScopeValues = ({ id }: ScopeValuesProps) => {
                 </CardBody>
             </Card>
         </>
-    ) : <></>;
-};
+    ) : <></>
+}

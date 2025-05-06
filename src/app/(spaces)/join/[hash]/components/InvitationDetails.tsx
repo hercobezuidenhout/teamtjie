@@ -38,7 +38,7 @@ export const InvitationDetails = ({ invitation, label }: InvitationDetailsProps)
   return (
     <VStack gap={4} textAlign="start" alignItems="start">
       <HStack w="fit-content">
-        <Heading>Teamtjie Invite</Heading>
+        <Heading size="md">Teamtjie Invite</Heading>
       </HStack>
       <Text>
         You have been invited to join the {label?.type} {label?.name} as a{' '}

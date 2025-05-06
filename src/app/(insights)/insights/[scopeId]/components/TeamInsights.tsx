@@ -1,16 +1,16 @@
-'use client';
+'use client'
 
-import { Card, CardBody, Heading, VStack, Text } from "@chakra-ui/react";
-import { PostsChart } from "./PostsChart";
-import { useAppUsageInsightsQuery } from "@/services/insights/queries/use-app-usage-insights-query";
+import { Card, CardBody, Heading, VStack, Text } from "@chakra-ui/react"
+import { PostsChart } from "./PostsChart"
+import { useAppUsageInsightsQuery } from "@/services/insights/queries/use-app-usage-insights-query"
 
 interface TeamInsightsProps {
-    scopeId: number;
+    scopeId: number
 }
 
 export const TeamInsights = ({ scopeId }: TeamInsightsProps) => {
-    const { data, isLoading } = useAppUsageInsightsQuery(scopeId);
-    console.info('useAppUsageInsightsQuery', data);
+    const { data, isLoading } = useAppUsageInsightsQuery(scopeId)
+    console.info('useAppUsageInsightsQuery', data)
 
     return (
         <VStack align="stretch">
@@ -19,11 +19,11 @@ export const TeamInsights = ({ scopeId }: TeamInsightsProps) => {
                 <CardBody>
                     <VStack>
                         <Heading size="xl">🙌</Heading>
-                        <Heading>Watch This Space</Heading>
+                        <Heading size="md">Watch This Space</Heading>
                         <Text>Some exciting stuff is coming!</Text>
                     </VStack>
                 </CardBody>
             </Card>
         </VStack>
-    );
-};
+    )
+}

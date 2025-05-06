@@ -18,12 +18,12 @@ export const ManagePostPermissions = ({ scopeId }: ManagePostPermissionsProps) =
     return (
         <Card>
             <CardHeader>
-                <Heading>Manage Post Permissions</Heading>
+                <Heading size="md">Manage Post Permissions</Heading>
             </CardHeader>
             <CardBody>
                 <VStack alignItems="stretch" gap={5}>
                     <VStack alignItems="stretch">
-                        <Heading>Wins</Heading>
+                        <Heading size="md">Wins</Heading>
                         <VStack gap={3} alignItems="stretch">
                             <ManagePostItem scopeId={scopeId} action="post" type="WIN" label="Who can post wins" roles={getRoles('post', 'WIN')} />
                             <ManagePostItem scopeId={scopeId} action="read" type="WIN" label="Who can view wins" roles={getRoles('read', 'WIN')} />

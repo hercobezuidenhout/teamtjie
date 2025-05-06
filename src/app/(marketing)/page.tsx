@@ -18,7 +18,7 @@ const MarketingPage = async () => {
     <HydrationBoundary state={dehydrate(queryClient)}>
       <Flex width="full" justifyContent="space-around" height="90vh" alignItems="center">
         <VStack>
-          <Heading>Teamtjie</Heading>
+          <Heading size="md">Teamtjie</Heading>
           <Text>Helping you understand your team</Text>
           <Link href="/login">
             <Button>Sign In</Button>

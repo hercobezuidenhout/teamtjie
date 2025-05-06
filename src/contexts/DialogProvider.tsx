@@ -1,4 +1,4 @@
-'use client';
+'use client'
 
 import {
   AlertDialog,
@@ -11,54 +11,54 @@ import {
   Grid,
   GridItem,
   Heading,
-} from '@chakra-ui/react';
-import produce from 'immer';
+} from '@chakra-ui/react'
+import produce from 'immer'
 import {
   createContext,
   PropsWithChildren,
   useContext,
   useReducer,
   useRef,
-} from 'react';
+} from 'react'
 
-type DialogCategory = 'information' | 'warning' | 'error';
+type DialogCategory = 'information' | 'warning' | 'error'
 
 type DialogOptions = {
-  category?: DialogCategory;
-  cancelLabel?: string | 'none';
-  confirmLabel?: string;
-};
+  category?: DialogCategory
+  cancelLabel?: string | 'none'
+  confirmLabel?: string
+}
 
 type DialogContent = {
-  title: string;
-  message: string;
-  callback?: () => void;
-};
+  title: string
+  message: string
+  callback?: () => void
+}
 
 interface DialogContextState {
-  isOpen: boolean;
-  content?: DialogContent;
-  options: DialogOptions;
+  isOpen: boolean
+  content?: DialogContent
+  options: DialogOptions
 }
 
 const DefaultOptions: DialogOptions = {
   category: 'information',
   cancelLabel: 'Cancel',
   confirmLabel: 'Okay',
-};
+}
 
 interface DialogContextValue {
-  dismiss: () => void;
-  notify: (content: DialogContent, options?: DialogOptions) => void;
+  dismiss: () => void
+  notify: (content: DialogContent, options?: DialogOptions) => void
 }
 
 type DialogAction =
   | { type: 'dismiss' }
   | {
-      type: 'notify';
-      content: DialogContent;
-      options?: DialogOptions;
-    };
+    type: 'notify'
+    content: DialogContent
+    options?: DialogOptions
+  }
 
 const DialogReducer = (
   state: DialogContextState,
@@ -67,26 +67,26 @@ const DialogReducer = (
   produce(state, (draft) => {
     switch (action.type) {
       case 'dismiss':
-        draft.isOpen = false;
-        draft.content = undefined;
-        draft.options = DefaultOptions;
-        return;
+        draft.isOpen = false
+        draft.content = undefined
+        draft.options = DefaultOptions
+        return
       case 'notify':
-        draft.isOpen = true;
-        draft.content = action.content;
-        draft.options = { ...DefaultOptions, ...action.options };
-        return;
+        draft.isOpen = true
+        draft.content = action.content
+        draft.options = { ...DefaultOptions, ...action.options }
+        return
     }
-  });
+  })
 
 const throwNotInitializedError = () => {
-  throw new Error('The context is not initialized');
-};
+  throw new Error('The context is not initialized')
+}
 
 const DialogContext = createContext<DialogContextValue>({
   dismiss: throwNotInitializedError,
   notify: throwNotInitializedError,
-});
+})
 
 export const DialogProvider = ({ children }: PropsWithChildren) => {
   const [
@@ -99,25 +99,25 @@ export const DialogProvider = ({ children }: PropsWithChildren) => {
   ] = useReducer(DialogReducer, {
     isOpen: false,
     options: DefaultOptions,
-  });
-  const cancelRef = useRef<HTMLButtonElement>(null);
+  })
+  const cancelRef = useRef<HTMLButtonElement>(null)
 
-  const dismiss = () => dispatch({ type: 'dismiss' });
+  const dismiss = () => dispatch({ type: 'dismiss' })
 
   const confirm = () => {
     if (content?.callback) {
-      content.callback();
+      content.callback()
     }
 
-    dismiss();
-  };
+    dismiss()
+  }
 
   const notify = (content: DialogContent, options?: DialogOptions) =>
     dispatch({
       type: 'notify',
       content,
       options,
-    });
+    })
 
   return (
     <DialogContext.Provider value={{ dismiss, notify }}>
@@ -129,7 +129,7 @@ export const DialogProvider = ({ children }: PropsWithChildren) => {
         <AlertDialogOverlay>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <Heading>{content?.title}</Heading>
+              <Heading size="md">{content?.title}</Heading>
             </AlertDialogHeader>
             <AlertDialogBody minHeight="unset">
               {content?.message}
@@ -165,7 +165,7 @@ export const DialogProvider = ({ children }: PropsWithChildren) => {
       </AlertDialog>
       {children}
     </DialogContext.Provider>
-  );
-};
+  )
+}
 
-export const useDialog = () => useContext(DialogContext);
+export const useDialog = () => useContext(DialogContext)

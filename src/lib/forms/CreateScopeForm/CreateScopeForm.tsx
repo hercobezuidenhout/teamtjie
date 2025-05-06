@@ -1,4 +1,4 @@
-'use client';
+'use client'
 
 import {
   Button,
@@ -11,24 +11,24 @@ import {
   Text,
   useToast,
   VStack,
-} from '@chakra-ui/react';
-import { Controller, FormProvider, useForm } from 'react-hook-form';
-import { CreateScopeAvatarInput } from './CreateScopeAvatarInput';
-import { FormInput } from '@/lib/inputs/FormInput/FormInput';
-import { useRouter } from 'next/navigation';
-import { getErrorDescription, getErrorMessage } from '@/utils/http-utils';
+} from '@chakra-ui/react'
+import { Controller, FormProvider, useForm } from 'react-hook-form'
+import { CreateScopeAvatarInput } from './CreateScopeAvatarInput'
+import { FormInput } from '@/lib/inputs/FormInput/FormInput'
+import { useRouter } from 'next/navigation'
+import { getErrorDescription, getErrorMessage } from '@/utils/http-utils'
 import {
   CreateScopePayload,
   useCreateScopeMutation,
-} from '@/services/scope/mutations/use-create-scope-mutation';
-import { useUploadAvatar } from '@/services/avatar/mutations/avatar-mutations';
+} from '@/services/scope/mutations/use-create-scope-mutation'
+import { useUploadAvatar } from '@/services/avatar/mutations/avatar-mutations'
 
 interface CreateScopeFormProps {
-  onCancel?: () => void;
-  type: 'SPACE' | 'TEAM';
-  spaceId?: number;
-  onLogoutClick?: () => void;
-  onSuccess?: () => void;
+  onCancel?: () => void
+  type: 'SPACE' | 'TEAM'
+  spaceId?: number
+  onLogoutClick?: () => void
+  onSuccess?: () => void
 }
 
 export const CreateScopeForm = ({
@@ -38,40 +38,40 @@ export const CreateScopeForm = ({
   onLogoutClick,
   onSuccess
 }: CreateScopeFormProps) => {
-  const formMethods = useForm<CreateScopePayload>();
-  const { handleSubmit, reset, control } = formMethods;
-  const { mutateAsync: createScope, isPending: isCreating } = useCreateScopeMutation();
-  const { mutateAsync: uploadAvatar, isPending: isUploading } = useUploadAvatar('SCOPE');
-  const toast = useToast();
-  const { push } = useRouter();
+  const formMethods = useForm<CreateScopePayload>()
+  const { handleSubmit, reset, control } = formMethods
+  const { mutateAsync: createScope, isPending: isCreating } = useCreateScopeMutation()
+  const { mutateAsync: uploadAvatar, isPending: isUploading } = useUploadAvatar('SCOPE')
+  const toast = useToast()
+  const { push } = useRouter()
 
-  const isTeam = type == 'TEAM';
+  const isTeam = type == 'TEAM'
 
   const onSubmit = async (data: CreateScopePayload) => {
     const scope: CreateScopePayload = {
       ...data,
       parentScopeId: isTeam ? spaceId : undefined,
       type: type,
-    };
+    }
 
-    const TOAST_TITLE = 'Team Created';
+    const TOAST_TITLE = 'Team Created'
 
     try {
-      const response = await createScope(scope);
+      const response = await createScope(scope)
 
       if (!response) {
-        return;
+        return
       }
 
-      const newScopeId = response.id;
+      const newScopeId = response.id
 
-      const { avatar } = data;
+      const { avatar } = data
 
       if (avatar) {
-        await uploadAvatar({ id: response.id, avatar });
+        await uploadAvatar({ id: response.id, avatar })
       }
 
-      reset();
+      reset()
 
       toast({
         title: TOAST_TITLE,
@@ -79,30 +79,30 @@ export const CreateScopeForm = ({
         variant: 'success',
         duration: 2000,
         icon: '🤘'
-      });
+      })
 
       if (onSuccess) {
-        onSuccess();
+        onSuccess()
       }
 
       isTeam
         ? push(`/spaces/${spaceId}/teams/${newScopeId}`)
-        : push(`/spaces/${newScopeId}`);
+        : push(`/spaces/${newScopeId}`)
     } catch (error) {
-      const errorMessage = getErrorMessage(error) ?? 'Something went wrong.';
+      const errorMessage = getErrorMessage(error) ?? 'Something went wrong.'
       toast({
         title: errorMessage,
         status: 'error',
         description: getErrorDescription(error),
-      });
+      })
     }
-  };
+  }
 
   return (
     <FormProvider {...formMethods}>
       <Card as="form" onSubmit={handleSubmit(onSubmit)}>
         <CardHeader>
-          <Heading>Create your team</Heading>
+          <Heading size="md">Create your team</Heading>
           <Text color="chakra-subtle-text">
             Picture-perfect team in the making! Add your team logo and name to get started.
           </Text>
@@ -153,5 +153,5 @@ export const CreateScopeForm = ({
         </CardFooter>
       </Card>
     </FormProvider>
-  );
-};
+  )
+}

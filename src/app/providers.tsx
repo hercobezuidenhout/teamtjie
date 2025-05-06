@@ -1,20 +1,19 @@
-'use client';
+'use client'
 
-import { AbilityContextProvider } from '@/contexts/AbilityContextProvider';
-import { AnalyticsProvider } from '@/contexts/AnalyticsProvider';
-import { DialogProvider } from '@/contexts/DialogProvider';
-import { theme } from '@/theme/theme';
-import { ChakraProvider } from '@chakra-ui/react';
-import { Session, SessionContextProvider } from '@supabase/auth-helpers-react';
-import { createBrowserClient } from '@supabase/ssr';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { PropsWithChildren, useState } from 'react';
+import { AbilityContextProvider } from '@/contexts/AbilityContextProvider'
+import { AnalyticsProvider } from '@/contexts/AnalyticsProvider'
+import { DialogProvider } from '@/contexts/DialogProvider'
+import { ChakraProvider } from '@chakra-ui/react'
+import { Session, SessionContextProvider } from '@supabase/auth-helpers-react'
+import { createBrowserClient } from '@supabase/ssr'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { PropsWithChildren, useState } from 'react'
 
 const getBrowserClient = () =>
   createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
+  )
 
 const getQueryClient = () =>
   new QueryClient({
@@ -25,25 +24,25 @@ const getQueryClient = () =>
         staleTime: 60 * 1000,
       },
     },
-  });
+  })
 
 interface AppProvidersProps extends PropsWithChildren {
-  initialSession?: Session | null;
+  initialSession?: Session | null
 }
 
 export const AppProviders = ({
   children,
   initialSession,
 }: AppProvidersProps) => {
-  const [supabaseClient] = useState(getBrowserClient);
-  const [queryClient] = useState(getQueryClient);
+  const [supabaseClient] = useState(getBrowserClient)
+  const [queryClient] = useState(getQueryClient)
 
   if (typeof localStorage !== 'undefined') {
-    localStorage.setItem("chakra-ui-color-mode", "light");
+    localStorage.setItem("chakra-ui-color-mode", "light")
   }
 
   return (
-    <ChakraProvider theme={theme}>
+    <ChakraProvider>
       <QueryClientProvider client={queryClient}>
         <SessionContextProvider
           supabaseClient={supabaseClient}
@@ -59,5 +58,5 @@ export const AppProviders = ({
         </SessionContextProvider>
       </QueryClientProvider>
     </ChakraProvider>
-  );
-};
+  )
+}

@@ -1,4 +1,4 @@
-'use client';
+'use client'
 
 import {
   Menu,
@@ -6,25 +6,25 @@ import {
   MenuDivider,
   MenuItem,
   MenuList,
-} from '@chakra-ui/menu';
-import { Button, HStack, useBreakpointValue } from '@chakra-ui/react';
-import { Icon } from '@chakra-ui/icons';
-import { ICONS } from '@/lib/icons/icons';
-import { AvatarTag } from '@/lib/tags/AvatarTag/AvatarTag';
-import { useSupabaseClient } from '@supabase/auth-helpers-react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { useCurrentUserQuery } from '@/services/user/queries/use-current-user-query';
+} from '@chakra-ui/menu'
+import { Button, HStack, useBreakpointValue } from '@chakra-ui/react'
+import { Icon } from '@chakra-ui/icons'
+import { ICONS } from '@/lib/icons/icons'
+import { AvatarTag } from '@/lib/tags/AvatarTag/AvatarTag'
+import { useSupabaseClient } from '@supabase/auth-helpers-react'
+import { useRouter } from 'next/navigation'
+import Link from 'next/link'
+import { useCurrentUserQuery } from '@/services/user/queries/use-current-user-query'
 
 export const ProfileMenu = () => {
-  const { auth } = useSupabaseClient();
-  const { data: currentUser } = useCurrentUserQuery();
-  const hideName = useBreakpointValue({ base: true, md: false });
-  const router = useRouter();
+  const { auth } = useSupabaseClient()
+  const { data: currentUser } = useCurrentUserQuery()
+  const hideName = useBreakpointValue({ base: true, md: false })
+  const router = useRouter()
 
   const handleSignOutClick = () => {
-    auth.signOut().then(() => router.push('/'));
-  };
+    auth.signOut().then(() => router.push('/'))
+  }
 
   return (
     <Menu placement="bottom-end">
@@ -36,7 +36,7 @@ export const ProfileMenu = () => {
         pr={4}
       >
         <HStack>
-          <AvatarTag hideLabel={hideName} avatar={currentUser} size="lg" />
+          <AvatarTag hideLabel={hideName} avatar={currentUser} />
         </HStack>
       </MenuButton>
       <MenuList>
@@ -54,5 +54,5 @@ export const ProfileMenu = () => {
         </MenuItem>
       </MenuList>
     </Menu>
-  );
-};
+  )
+}

@@ -1,7 +1,6 @@
-import { Divider, Heading, HStack, VStack } from '@chakra-ui/react'
+import { Heading, HStack, VStack } from '@chakra-ui/react'
 import React from 'react'
 import { ProfileMenu } from './ProfileMenu'
-import { SupportMenu } from './SupportMenu'
 import { NavDrawerToggle } from './NavDrawerToggle'
 
 export const SpacesHeader = () => (
@@ -10,16 +9,12 @@ export const SpacesHeader = () => (
       <HStack gap={{ base: 2, md: 5 }}>
         <NavDrawerToggle />
         <HStack>
-          <Heading display={{ base: 'none', md: 'block' }}>Teamtjie</Heading>
+          <Heading size="md">Teamtjie</Heading>
         </HStack>
       </HStack>
 
 
       <HStack gap={{ base: 2, md: 5 }}>
-        <HStack>
-          <SupportMenu />
-        </HStack>
-        <Divider orientation="vertical" height={5} />
         <ProfileMenu />
       </HStack>
     </HStack>

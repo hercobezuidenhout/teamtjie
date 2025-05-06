@@ -1,62 +1,62 @@
-'use client';
+'use client'
 
-import { VStackStretch } from "@/lib/layout/VStackStretch";
-import { Card, CardBody, CardFooter, CardHeader, Flex, HStack, Heading, Icon, IconButton, Text, useDisclosure, useToast } from "@chakra-ui/react";
-import { BackToAccountButton } from "../components/BackToAccountButton/BackToAccountButton";
-import { User, useSupabaseClient } from "@supabase/auth-helpers-react";
-import { useEffect, useState } from "react";
-import { FaMicrosoft } from "react-icons/fa6";
-import { FiTrash } from "react-icons/fi";
-import { ConfirmationModal } from "@/lib/modals/ConfirmationModal/ConfirmationModal";
-import { UserIdentity } from "@supabase/supabase-js";
-import { EmptyStateCard } from "@/lib/cards/EmptyStateCard/EmptyStateCard";
+import { VStackStretch } from "@/lib/layout/VStackStretch"
+import { Card, CardBody, CardFooter, CardHeader, Flex, HStack, Heading, Icon, IconButton, Text, useDisclosure, useToast } from "@chakra-ui/react"
+import { BackToAccountButton } from "../components/BackToAccountButton/BackToAccountButton"
+import { User, useSupabaseClient } from "@supabase/auth-helpers-react"
+import { useEffect, useState } from "react"
+import { FaMicrosoft } from "react-icons/fa6"
+import { FiTrash } from "react-icons/fi"
+import { ConfirmationModal } from "@/lib/modals/ConfirmationModal/ConfirmationModal"
+import { UserIdentity } from "@supabase/supabase-js"
+import { EmptyStateCard } from "@/lib/cards/EmptyStateCard/EmptyStateCard"
 
 const Page = () => {
-    const { auth } = useSupabaseClient();
-    const { isOpen, onOpen, onClose } = useDisclosure();
-    const [selectedIdentity, setSelectedIdentity] = useState<UserIdentity>();
-    const toast = useToast();
+    const { auth } = useSupabaseClient()
+    const { isOpen, onOpen, onClose } = useDisclosure()
+    const [selectedIdentity, setSelectedIdentity] = useState<UserIdentity>()
+    const toast = useToast()
 
-    const [user, setUser] = useState<User>();
+    const [user, setUser] = useState<User>()
 
     const refreshUser = () => auth
         .getUser()
         .then(({ data }) => {
-            setUser(data.user ?? undefined);
-        });
+            setUser(data.user ?? undefined)
+        })
 
     const handleClick = (identity: UserIdentity) => {
-        console.info(identity);
-        setSelectedIdentity(identity);
-        onOpen();
-    };
+        console.info(identity)
+        setSelectedIdentity(identity)
+        onOpen()
+    }
 
     const handleConfirm = async () => {
-        onClose();
+        onClose()
 
         if (!selectedIdentity) {
-            return;
+            return
         }
 
-        const { error } = await auth.unlinkIdentity(selectedIdentity);
+        const { error } = await auth.unlinkIdentity(selectedIdentity)
 
         if (error) {
-            toast({ title: error.message, variant: 'error', icon: '🥲' });
+            toast({ title: error.message, variant: 'error', icon: '🥲' })
         } else {
-            refreshUser();
+            refreshUser()
             toast({
                 title: 'Provider Removed',
                 description: `The ${selectedIdentity.provider} has successfully been removed.`,
                 variant: 'success',
                 duration: 2000,
                 icon: '🤘'
-            });
+            })
         }
-    };
+    }
 
     useEffect(() => {
-        refreshUser();
-    }, []);
+        refreshUser()
+    }, [])
 
     return (
         <>
@@ -64,7 +64,7 @@ const Page = () => {
                 <BackToAccountButton />
                 <Card>
                     <CardHeader>
-                        <Heading>Manage Providers</Heading>
+                        <Heading size="md">Manage Providers</Heading>
                     </CardHeader>
                     <CardBody py={0}>
                         <VStackStretch gap={3}>
@@ -94,7 +94,7 @@ const Page = () => {
             </VStackStretch>
             <ConfirmationModal isOpen={isOpen} onCancel={onClose} onConfirm={handleConfirm} />
         </>
-    );
-};
+    )
+}
 
-export default Page;
+export default Page

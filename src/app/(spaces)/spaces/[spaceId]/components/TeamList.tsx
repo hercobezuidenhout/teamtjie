@@ -1,23 +1,23 @@
-'use client';
+'use client'
 
-import { Heading, VStack } from "@chakra-ui/react";
-import { TeamListLink } from "./TeamListLink";
-import { Scope } from "@prisma/client";
-import { CreateTeamButton } from "./CreateTeamButton";
-import { subject } from "@casl/ability";
-import { Can } from "@/lib/casl/Can";
-import { useScopesQuery } from "@/services/scope/queries/use-scopes-query";
+import { Heading, VStack } from "@chakra-ui/react"
+import { TeamListLink } from "./TeamListLink"
+import { Scope } from "@prisma/client"
+import { CreateTeamButton } from "./CreateTeamButton"
+import { subject } from "@casl/ability"
+import { Can } from "@/lib/casl/Can"
+import { useScopesQuery } from "@/services/scope/queries/use-scopes-query"
 
 interface TeamListProps {
-    scope: Scope;
+    scope: Scope
 }
 
 export const TeamList = ({ scope }: TeamListProps) => {
-    const { data } = useScopesQuery();
+    const { data } = useScopesQuery()
 
     return (
         <VStack align="stretch">
-            <Heading variant="menu-heading">Teams</Heading>
+            <Heading size="md">Teams</Heading>
 
             {data?.filter(team => !team.parentScopeId).map(team => (
                 <TeamListLink key={team.id} href={`/spaces/${team.id}`} {...team} image={team.image ? team.image : undefined} />
@@ -27,5 +27,5 @@ export const TeamList = ({ scope }: TeamListProps) => {
                 <CreateTeamButton />
             </Can>
         </VStack >
-    );
-};
+    )
+}

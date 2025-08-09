@@ -1,7 +1,7 @@
 'use client';
 
 import { LoadingButton } from "@/lib/buttons/LoadingButton/LoadingButton";
-import { Box, Button, HStack, Heading, Modal, ModalBody, ModalContent, ModalFooter, ModalOverlay, PinInput, PinInputField, Text, VStack } from "@chakra-ui/react";
+import { Button, HStack, Heading, Modal, ModalBody, ModalContent, ModalFooter, ModalOverlay, PinInput, PinInputField, Text, VStack } from "@chakra-ui/react";
 import { useSupabaseClient } from "@supabase/auth-helpers-react";
 import { useState } from "react";
 

@@ -15,7 +15,6 @@ import {
   FiDownload,
   FiEdit2,
   FiExternalLink,
-  FiFilePlus,
   FiHome,
   FiLock,
   FiLogOut,

@@ -14,7 +14,7 @@ export const getUserFeed = async ({ userId, scopeId, skip, take, includeParentSc
 
     const scopes = includeParentScope ? [scopeId, ...teams.map(team => team.scopeId)] : teams.map(team => team.scopeId);
 
-    const feed = await getFeed({ scopeIds: includeChildren ? scopes : [scopeId], skip, take, userId });
+    const feed = await getFeed({ scopeIds: includeChildren ? scopes : [scopeId], skip, take });
 
     return feed;
 };

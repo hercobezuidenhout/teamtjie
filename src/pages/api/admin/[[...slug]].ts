@@ -24,7 +24,7 @@ class AdminHandler {
       throw new UnauthorizedException();
     }
 
-    const tokenFromDatabase = await prisma.TeamtjieToken.findFirst({
+    const tokenFromDatabase = await prisma.teamtjieToken.findFirst({
       where: {
         token: String(TeamtjieToken)
       }

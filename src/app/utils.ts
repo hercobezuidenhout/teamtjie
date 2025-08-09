@@ -1,6 +1,5 @@
-import { cookies, headers } from 'next/headers';
+import { cookies } from 'next/headers';
 import { createServerClient } from '@supabase/ssr';
-import { RequestOptions } from '@/services/network';
 
 export const getSession = async () => {
   const cookieStore = cookies();
@@ -20,13 +19,4 @@ export const getSession = async () => {
   const result = await supabase.auth.getSession();
 
   return result.data.session ?? undefined;
-};
-
-export const getServersideRequestOptions = (): RequestOptions => {
-  const pageHeaders = Object.fromEntries(headers().entries());
-
-  return {
-    headers: pageHeaders,
-    baseUrl: process.env.NEXT_PUBLIC_BASE_URL,
-  };
 };

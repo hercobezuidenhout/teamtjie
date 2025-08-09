@@ -2,7 +2,7 @@ import {
   PostCardHeader,
   PostCardHeaderProps,
 } from './PostCardHeader';
-import { Card, CardBody, HStack, VStack } from '@chakra-ui/react';
+import { Card, CardBody, VStack } from '@chakra-ui/react';
 import {
   PostCardBody,
   PostCardBodyProps,
@@ -16,7 +16,7 @@ import { useCreateReactionMutation } from '@/services/feed/mutations/use-create-
 import { useDeleteReactionMutation } from '@/services/feed/mutations/use-delete-reaction-mutation';
 import { Reactions } from './Reactions';
 import { PostType } from '@prisma/client';
-import { CLAP_HANDS, THUMBS_DOWN, THUMBS_UP } from './utils';
+import { CLAP_HANDS } from './utils';
 import { SparkleButton } from '@/app/playground/animations/SparkleButton/SparkleButton';
 
 export interface PostCardProps extends

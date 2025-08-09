@@ -1,0 +1,22 @@
+{
+  "delete": true,
+  "singleQuotes": true,
+  "directory": [
+    "./src/backend",
+    "./src/prisma",
+    "./src/theme/components",
+    "./src/models",
+    "./src/utils"
+  ],
+  "ignore": [
+    "\\b\\w+\\.test[s]?\\..*\\b"
+  ],
+  "exclude": [
+    "/__tests__/",
+    "\\.test\\.tsx?$",
+    "\\.stories\\.tsx?$",
+    "\\.d\\.ts?$",
+    "/partials/",
+    "src/(?!theme).*/components/"
+  ]
+}

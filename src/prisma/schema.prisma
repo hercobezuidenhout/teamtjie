@@ -1,0 +1,255 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["views"]
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// Enums
+enum RoleType {
+  ADMIN
+  MEMBER
+  GUEST
+}
+
+enum FeatureFlagType {
+  STRING
+  DATE
+  INT
+  BOOLEAN
+}
+
+enum ScopeType {
+  SPACE
+  TEAM
+}
+
+enum PostType {
+  FINE
+  PAYMENT
+  WIN
+}
+
+enum ScopePostPermissionAction {
+  post
+  read
+  view_author
+}
+
+enum NotificationType {
+  EMAIL
+  IN_APP
+}
+
+// Models
+
+model User {
+  id                      String                       @id @default(cuid())
+  name                    String
+  email                   String?                      @unique
+  image                   String?
+  aboutMe                 String?
+  createdAt               DateTime                     @default(now())
+  updatedAt               DateTime                     @default(now()) @updatedAt
+  createdInvitations      Invitation[]
+  roles                   ScopeRole[]
+  postReactions           PostReaction[]
+  issuedByPosts           Post[]                       @relation("Post_issuedToUser")
+  issuedToPosts           Post[]                       @relation("Post_issuedByUser")
+  acceptedInvites         AcceptedInvite[]
+  notificationPreferences UserNotificationPreference[]
+}
+
+model DeactivateUser {
+  id        String  @id @default(cuid())
+  email     String? @unique
+  processed Boolean @default(false)
+}
+
+model Scope {
+  id                   Int                   @id @default(autoincrement())
+  name                 String
+  image                String?
+  description          String?
+  type                 ScopeType
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @default(now()) @updatedAt
+  parentScopeId        Int?
+  isPublic             Boolean               @default(false)
+  parentScope          Scope?                @relation(name: "parentScope", fields: [parentScopeId], references: [id], onDelete: Cascade)
+  childScopes          Scope[]               @relation(name: "parentScope")
+  roles                ScopeRole[]
+  invitations          Invitation[]
+  featureFlagOverrides ScopeFeatureFlag[]
+  scopeValues          ScopeValue[]
+  scopeLinks           ScopeLink[]
+  posts                Post[]
+  ScopePostPermission  ScopePostPermission[]
+  resendDetails        ScopeResendDetails[]
+}
+
+model ScopeValue {
+  id          Int         @id @default(autoincrement())
+  name        String
+  description String
+  scopeId     Int
+  scope       Scope       @relation(fields: [scopeId], references: [id], onDelete: Cascade)
+  PostValue   PostValue[]
+
+  @@unique([scopeId, name])
+}
+
+model ScopeLink {
+  id       Int     @id @default(autoincrement())
+  title    String
+  url      String
+  scopeId  Int
+  scope    Scope   @relation(fields: [scopeId], references: [id], onDelete: Cascade)
+  isPublic Boolean
+
+  @@unique([scopeId, title])
+  @@unique([scopeId, url])
+}
+
+model ScopeFeatureFlag {
+  featureFlagId Int
+  scopeId       Int
+  featureFlag   FeatureFlag @relation(fields: [featureFlagId], references: [id], onDelete: Cascade)
+  scope         Scope       @relation(fields: [scopeId], references: [id], onDelete: Cascade)
+  value         String
+
+  @@id([featureFlagId, scopeId])
+}
+
+model ScopeRole {
+  role    RoleType @default(MEMBER)
+  userId  String
+  scopeId Int
+  scope   Scope    @relation(fields: [scopeId], references: [id], onDelete: Cascade)
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([role, scopeId, userId])
+}
+
+model FeatureFlag {
+  id        Int                @id @default(autoincrement())
+  name      String             @unique
+  type      FeatureFlagType
+  value     String
+  overrides ScopeFeatureFlag[]
+}
+
+model Invitation {
+  id              Int              @id @default(autoincrement())
+  hash            String
+  expiresAt       DateTime
+  createdByUserId String
+  user            User             @relation(fields: [createdByUserId], references: [id], onDelete: Cascade)
+  scopeId         Int
+  scope           Scope            @relation(fields: [scopeId], references: [id], onDelete: Cascade)
+  defaultRole     RoleType         @default(MEMBER)
+  acceptedInvites AcceptedInvite[]
+}
+
+model Post {
+  id          Int            @id @default(autoincrement())
+  issuedBy    User           @relation(name: "Post_issuedByUser", fields: [issuedById], references: [id], onDelete: Cascade)
+  issuedById  String
+  issuedTo    User?          @relation(name: "Post_issuedToUser", fields: [issuedToId], references: [id], onDelete: Cascade)
+  issuedToId  String?
+  description String
+  reactions   PostReaction[]
+  values      PostValue[]
+  type        PostType
+  scope       Scope          @relation(map: "Post_scopeId_scope_fk", fields: [scopeId], references: [id], onDelete: Cascade)
+  scopeId     Int
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @default(now()) @updatedAt
+}
+
+model PostReaction {
+  postId    Int
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reaction  String
+  createdAt DateTime @default(now())
+
+  @@id([postId, userId, reaction])
+}
+
+model PostValue {
+  scopeValueId Int
+  scopeValue   ScopeValue @relation(fields: [scopeValueId], references: [id], onDelete: Cascade)
+  postId       Int
+  post         Post       @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([scopeValueId, postId])
+}
+
+model TeamtjieToken {
+  id        String   @id @default(cuid())
+  token     String
+  createdAt DateTime @default(now())
+}
+
+model ScopePostPermission {
+  id      Int                       @id @default(autoincrement())
+  scopeId Int
+  scope   Scope                     @relation(map: "ScopePostPermission_scopeId_scope_fk", fields: [scopeId], references: [id], onDelete: Cascade)
+  action  ScopePostPermissionAction
+  type    PostType
+  roles   ScopePostPermissionRole[]
+}
+
+model ScopePostPermissionRole {
+  scopePostPermissionId   Int
+  scopePostPermissionRole ScopePostPermission @relation(map: "ScopePostPermissionRole_scopeId_scope_fk", fields: [scopePostPermissionId], references: [id], onDelete: Cascade)
+  role                    RoleType
+
+  @@id([scopePostPermissionId, role])
+}
+
+model PaidFine {
+  paymentId Int
+  fineId    Int
+  userId    String
+
+  @@id([paymentId, fineId])
+}
+
+model AcceptedInvite {
+  id        Int      @id @default(autoincrement())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  invitationId Int
+  invitation   Invitation @relation(fields: [invitationId], references: [id], onDelete: Cascade)
+}
+
+model UserNotificationPreference {
+  userId  String
+  user    User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type    NotificationType
+  event   String
+  enabled Boolean
+
+  @@id([userId, type, event])
+}
+
+model ScopeResendDetails {
+  id          Int    @id @default(autoincrement())
+  scopeId     Int    @unique
+  scope       Scope  @relation(fields: [scopeId], references: [id], onDelete: Cascade)
+  apiKey      String
+  senderName  String
+  senderEmail String
+}

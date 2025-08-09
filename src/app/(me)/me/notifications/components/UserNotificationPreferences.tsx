@@ -41,8 +41,6 @@ export const UserNotificationPreferences = ({ user }: UserNotificationPreference
                         <Heading size="sm">Posts</Heading>
                         <VStack gap={3} alignItems="stretch">
                             <NotificationPreferenceItem event={NOTIFICATIONS.NOTIFY_USER_OF_NEW_WIN} userId={user.id} label="When you are given a win" preferences={getPreferences(NOTIFICATIONS.NOTIFY_USER_OF_NEW_WIN)} />
-                            <NotificationPreferenceItem event={NOTIFICATIONS.NOTIFY_USER_OF_NEW_FINE} userId={user.id} label="When you are given a fine" preferences={getPreferences(NOTIFICATIONS.NOTIFY_USER_OF_NEW_FINE)} />
-                            <NotificationPreferenceItem event={NOTIFICATIONS.NOTIFY_SCOPE_OF_NEW_FINE} userId={user.id} label="When someone in the team is given a fine" preferences={getPreferences(NOTIFICATIONS.NOTIFY_SCOPE_OF_NEW_FINE)} />
                             <NotificationPreferenceItem event={NOTIFICATIONS.NOTIFY_SCOPE_OF_NEW_WIN} userId={user.id} label="When someone in the team is given a win" preferences={getPreferences(NOTIFICATIONS.NOTIFY_SCOPE_OF_NEW_WIN)} />
                         </VStack>
                     </VStack>

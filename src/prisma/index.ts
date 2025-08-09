@@ -22,7 +22,6 @@ export * from './commands/delete-scope';
 export * from './commands/delete-user-posts-from-scope';
 export * from './commands/delete-user';
 export * from './commands/leave-scope';
-export * from './commands/pay-fines';
 export * from './commands/remove-scope-post-permission-role';
 export * from './commands/update-scope-resend-details';
 export * from './commands/update-scope-role-to-admin';

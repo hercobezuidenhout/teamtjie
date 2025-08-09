@@ -15,6 +15,6 @@ export type InvitationResponse = Invitation & { scope: Scope; };
 
 type UserScopes = { scopeType: ScopeType; scopeId: number; joinedDate: Date; }[];
 
-export type UserWithFineCount = User & {
+export type UserWithWinCount = User & {
   scopes: UserScopes;
 };

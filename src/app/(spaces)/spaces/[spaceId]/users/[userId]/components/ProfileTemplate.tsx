@@ -33,7 +33,6 @@ export const ProfileTemplate = ({
         dateLabel="Joined"
         descriptionName="aboutMe"
         fallbackDescription="Tell your team more about yourself..."
-        fineCount={0}
         isEditing={isEditing}
         onCancelEditing={stopEditing}
         onUpdate={handleUpdate}

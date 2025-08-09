@@ -50,12 +50,8 @@ export const PostCard = ({
 
   const generateTitle = () => {
     switch (type) {
-      case 'FINE':
-        return 'was fined';
       case 'WIN':
         return 'was awarded a win';
-      case 'PAYMENT':
-        return 'paid off a fine';
       default:
         return 'did something';
     }
@@ -65,15 +61,6 @@ export const PostCard = ({
     const userReactions = reactions.filter(reaction => reaction.users.filter(user => user.id === currentUser.id).length > 0);
 
     switch (type) {
-      case 'FINE':
-        const userHasVoted = userReactions.find(reaction => reaction.emoji === THUMBS_UP || reaction.emoji === THUMBS_DOWN);
-
-        return !userHasVoted && (
-          <HStack>
-            <SparkleButton onClick={() => handleAddReaction(THUMBS_UP)}>👍</SparkleButton>
-            <SparkleButton onClick={() => handleAddReaction(THUMBS_DOWN)}>👎</SparkleButton>
-          </HStack>
-        );
       case 'WIN':
         const userHasCelebrated = userReactions.find(reaction => reaction.emoji === CLAP_HANDS);
         return !userHasCelebrated && <SparkleButton onClick={() => handleAddReaction(CLAP_HANDS)} emoji='👏'>Celebrate</SparkleButton>;

@@ -5,15 +5,14 @@ import { subject } from "@casl/ability";
 
 interface PostTypeRadioProps {
     scopeId: number;
-    initialValue: 'WIN' | 'FINE' | 'PAYMENT';
+    initialValue: 'WIN';
     onChange: (value) => void;
 }
 
 export const PostTypeRadio = ({ initialValue, onChange, scopeId }: PostTypeRadioProps) => {
     const options = [
-        { value: 'WIN', label: '🎉 Win' },
-        { value: 'FINE', label: '🚨 Fine' },
-        { value: 'PAYMENT', label: '💰 Pay' }];
+        { value: 'WIN', label: '🎉 Win' }
+    ];
 
     const { getRootProps, getRadioProps } = useRadioGroup({
         name: 'postType',

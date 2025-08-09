@@ -68,27 +68,21 @@ export const abilities = (roles: AbilityRole[], scopeRoles: ScopePostPermission[
         /**
          * POST
          * 
-         * Posting fines, wins and payments
+         * Posting wins
          */
         roles
             .forEach(role => {
-                can('post', 'Post', { scopeId: role.scopeId, type: 'FINE' });
                 can('post', 'Post', { scopeId: role.scopeId, type: 'WIN' });
-                can('post', 'Post', { scopeId: role.scopeId, type: 'PAYMENT' });
             });
 
         roles
             .forEach(role => {
-                can('read', 'Post', { scopeId: role.scopeId, type: 'FINE' });
                 can('read', 'Post', { scopeId: role.scopeId, type: 'WIN' });
-                can('read', 'Post', { scopeId: role.scopeId, type: 'PAYMENT' });
             });
 
         roles
             .forEach(role => {
-                can('view_author', 'Post', { scopeId: role.scopeId, type: 'FINE' });
                 can('view_author', 'Post', { scopeId: role.scopeId, type: 'WIN' });
-                can('view_author', 'Post', { scopeId: role.scopeId, type: 'PAYMENT' });
             });
 
         roles

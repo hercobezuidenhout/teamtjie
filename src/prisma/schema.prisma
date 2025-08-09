@@ -32,8 +32,6 @@ enum ScopeType {
 }
 
 enum PostType {
-  FINE
-  PAYMENT
   WIN
 }
 
@@ -215,14 +213,6 @@ model ScopePostPermissionRole {
   role                    RoleType
 
   @@id([scopePostPermissionId, role])
-}
-
-model PaidFine {
-  paymentId Int
-  fineId    Int
-  userId    String
-
-  @@id([paymentId, fineId])
 }
 
 model AcceptedInvite {

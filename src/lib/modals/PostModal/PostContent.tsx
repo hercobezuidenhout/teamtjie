@@ -6,7 +6,7 @@ import { PostDescription, PostDescriptionProps } from "./PostDescription";
 import { Scope } from "@prisma/client";
 
 interface PostContentProps extends PostDescriptionProps {
-    postType: 'WIN' | 'FINE' | 'PAYMENT';
+    postType: 'WIN';
     selectedUser: string;
     onPostTypeChange: (newType) => void;
     onSelectedUserChange: (newUser) => void;
@@ -24,14 +24,12 @@ export const PostContent = ({ postType, selectedUser, onPostTypeChange, onSelect
             <ModalBody>
                 <VStack alignItems="stretch" width="full" gap={5} height="fit-content">
                     <PostTypeRadio initialValue={postType} onChange={onPostTypeChange} scopeId={selectedScope.id} />
-                    {postType !== 'PAYMENT' && (
-                        <UserAutoComplete
-                            onChange={(user) => onSelectedUserChange(String(user))}
-                            scopeId={selectedScope.id}
-                            scopeType={selectedScope.type}
-                            value={[selectedUser]}
-                        />
-                    )}
+                    <UserAutoComplete
+                        onChange={(user) => onSelectedUserChange(String(user))}
+                        scopeId={selectedScope.id}
+                        scopeType={selectedScope.type}
+                        value={[selectedUser]}
+                    />
                     <PostDescription {...rest} />
                 </VStack>
             </ModalBody>

@@ -33,9 +33,7 @@ export const PostsChart = ({ data, isLoading }: PostChartProps) => {
                             <XAxis dataKey="date" />
                             <YAxis />
                             <Tooltip />
-                            <Line type="monotone" dataKey="fines" stroke="#1570ef" />
                             <Line type="monotone" dataKey="wins" stroke="#82ca9d" />
-                            <Line type="monotone" dataKey="payments" stroke="#ca8382" />
                         </LineChart>
                     </ResponsiveContainer>
                 )}

@@ -9,14 +9,11 @@ export const generatePostUsageInsights = async (scopeId: number, startDate: Date
         const dateKey = entry.date;
 
         if (!dataMap[dateKey]) {
-            dataMap[dateKey] = { date: dateKey, fines: 0, wins: 0, payments: 0 };
+            dataMap[dateKey] = { date: dateKey, wins: 0 };
         }
-        if (entry.type === 'FINE') {
-            dataMap[dateKey].fines = entry.count;
-        } else if (entry.type === 'WIN') {
+
+        if (entry.type === 'WIN') {
             dataMap[dateKey].wins = entry.count;
-        } else if (entry.type === 'PAYMENT') {
-            dataMap[dateKey].payments = entry.count;
         }
     });
 
@@ -26,7 +23,7 @@ export const generatePostUsageInsights = async (scopeId: number, startDate: Date
     while (currentDate <= endDate) {
         const dateKey = currentDate.toISOString().split('T')[0];
         if (!dataMap[dateKey]) {
-            dataMap[dateKey] = { date: dateKey, fines: 0, wins: 0, payments: 0 };
+            dataMap[dateKey] = { date: dateKey, wins: 0 };
         }
         dateArray.push(dataMap[dateKey]);
         currentDate.setDate(currentDate.getDate() + 1);

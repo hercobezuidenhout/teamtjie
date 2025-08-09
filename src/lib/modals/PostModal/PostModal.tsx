@@ -13,7 +13,7 @@ interface PostModalProps extends Pick<ModalProps, 'isOpen' | 'onClose'> {
     initialScope: Scope;
     isOpen: boolean;
     onClose: () => void;
-    initialPostType: 'WIN' | 'FINE' | 'PAYMENT';
+    initialPostType: 'WIN';
 }
 
 export const PostModal = ({ isOpen, onClose, initialPostType, initialScope }: PostModalProps) => {

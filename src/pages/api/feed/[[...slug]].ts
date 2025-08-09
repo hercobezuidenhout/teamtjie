@@ -5,7 +5,6 @@ import { CreatePostDto } from "@/models/dtos/feed/create-post-dto";
 import { CreatePostCommand, createPost } from "@/prisma/commands/create-post";
 import { notifyScopeOfNewWin } from "@/backend/notifications/services/notify-scope-of-new-win";
 import { notifyUserOfNewWin } from "@/backend/notifications/services/notify-user-of-new-win";
-import { notifyUserOfNewFine } from "@/backend/notifications/services/notify-user-of-new-fine";
 import { CreateReactionDto, PaginatedApiRequest } from "@/models";
 import type { UserApiRequest, AbilitiesApiRequest } from "@/models";
 import { createReaction, deleteReaction } from "@/prisma";
@@ -16,7 +15,6 @@ import { Paginated } from "@/backend/middleware/paginated/paginated";
 import { WithAbilities } from "@/backend/middleware/with-abilities/with-abilities";
 import { detectNegativeLanguage } from "@/services/feed/utils/validate-post";
 import type { ValidatablePost } from "@/models/types/validatable-post";
-import { payFines } from "@/prisma/commands/pay-fines";
 
 
 
@@ -73,14 +71,8 @@ class FeedHandler {
         const post = await createPost(command);
 
         switch (body.type) {
-            case 'FINE':
-                await Promise.all([notifyUserOfNewFine(post)]);
-                break;
             case 'WIN':
                 await Promise.all([notifyScopeOfNewWin(post), notifyUserOfNewWin(post)]);
-                break;
-            case 'PAYMENT':
-                await payFines({ issuedById: req.userId, paymentId: post.id, scopeId: body.scopeId });
                 break;
             default:
                 break;

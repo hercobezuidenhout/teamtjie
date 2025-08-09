@@ -17,7 +17,7 @@ interface PostFormProps {
 
 export const PostForm = ({ scope }: PostFormProps) => {
     const { isOpen, onOpen, onClose } = useDisclosure();
-    const [postType, setPostType] = useState<'WIN' | 'FINE' | 'PAYMENT'>(DEFAULT_POST_TYPE);
+    const [postType, setPostType] = useState<'WIN'>(DEFAULT_POST_TYPE);
     const [postAbilities, setPostAbilities] = useState<string[]>([]);
 
     const abilities = useAbilities();
@@ -32,7 +32,7 @@ export const PostForm = ({ scope }: PostFormProps) => {
     };
 
     useEffect(() => {
-        const availablePostTypes = ['WIN', 'FINE', 'PAYMENT'];
+        const availablePostTypes = ['WIN'];
         const typesUserCanPost = availablePostTypes.filter(type => abilities.can('post', subject('Post', { scopeId: scope.id, type })));
         setPostAbilities(typesUserCanPost);
     }, [abilities]);
@@ -52,12 +52,6 @@ export const PostForm = ({ scope }: PostFormProps) => {
                                     <ButtonGroup variant="ghost" w="xs" justifyContent="space-between">
                                         <Can I="post" this={subject('Post', { scopeId: scope.id, type: 'WIN' })}>
                                             <Button onClick={() => handleButtonClick('WIN')}>🎉 Win</Button>
-                                        </Can>
-                                        <Can I="post" this={subject('Post', { scopeId: scope.id, type: 'FINE' })}>
-                                            <Button onClick={() => handleButtonClick('FINE')}>🚨 Fine</Button>
-                                        </Can>
-                                        <Can I="post" this={subject('Post', { scopeId: scope.id, type: 'PAYMENT' })}>
-                                            <Button onClick={() => handleButtonClick('PAYMENT')}>💰 Pay</Button>
                                         </Can>
                                     </ButtonGroup>
                                 </>

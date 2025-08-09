@@ -18,12 +18,8 @@ export const PostCardBodyContent = ({
 }: PostCardBodyContentProps) => {
   const generateLabel = () => {
     switch (type) {
-      case 'FINE':
-        return '🚨';
       case 'WIN':
         return '🎉';
-      case 'PAYMENT':
-        return '💰';
       default:
         break;
     }

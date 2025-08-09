@@ -26,7 +26,6 @@ interface ProfileCardProps<
   dateValue: Date;
   descriptionName: string;
   fallbackDescription?: string;
-  fineCount: number;
   isEditing: boolean;
   menu?: ReactNode;
   onUpdate: (payload: T) => Promise<void>;

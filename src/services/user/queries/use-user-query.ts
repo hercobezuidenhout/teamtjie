@@ -1,6 +1,6 @@
 import { QueryFunctionContext, useQuery } from '@tanstack/react-query';
 import { get } from '@/services/network';
-import { UserWithFineCount } from '@/models';
+import { UserWithWinCount } from '@/models';
 import { ENDPOINTS } from '@/services/endpoints';
 
 export const useUserQuery = (id?: string) => {
@@ -8,7 +8,7 @@ export const useUserQuery = (id?: string) => {
     queryKey: ['users', id],
     queryFn: ({ signal }: QueryFunctionContext) =>
       id
-        ? get<UserWithFineCount>(`${ENDPOINTS.user.base}/${id}`, {
+        ? get<UserWithWinCount>(`${ENDPOINTS.user.base}/${id}`, {
           signal,
         })
         : Promise.resolve(undefined),

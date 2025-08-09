@@ -22,34 +22,7 @@ export const checkAndCreateScopePermissions = async (scopeId: number) => {
         data: {
             scopeId: scopeId,
             action: 'post',
-            type: 'FINE',
-            roles: DEFAULT_ROLES
-        }
-    });
-
-    await prisma.scopePostPermission.create({
-        data: {
-            scopeId: scopeId,
-            action: 'post',
             type: 'WIN',
-            roles: DEFAULT_ROLES
-        }
-    });
-
-    await prisma.scopePostPermission.create({
-        data: {
-            scopeId: scopeId,
-            action: 'post',
-            type: 'PAYMENT',
-            roles: DEFAULT_ROLES
-        }
-    });
-
-    await prisma.scopePostPermission.create({
-        data: {
-            scopeId: scopeId,
-            action: 'read',
-            type: 'FINE',
             roles: DEFAULT_ROLES
         }
     });
@@ -66,35 +39,8 @@ export const checkAndCreateScopePermissions = async (scopeId: number) => {
     await prisma.scopePostPermission.create({
         data: {
             scopeId: scopeId,
-            action: "read",
-            type: 'PAYMENT',
-            roles: DEFAULT_ROLES
-        }
-    });
-
-    await prisma.scopePostPermission.create({
-        data: {
-            scopeId: scopeId,
-            action: 'view_author',
-            type: 'FINE',
-            roles: DEFAULT_ROLES
-        }
-    });
-
-    await prisma.scopePostPermission.create({
-        data: {
-            scopeId: scopeId,
             action: 'view_author',
             type: 'WIN',
-            roles: DEFAULT_ROLES
-        }
-    });
-
-    await prisma.scopePostPermission.create({
-        data: {
-            scopeId: scopeId,
-            action: 'view_author',
-            type: 'PAYMENT',
             roles: DEFAULT_ROLES
         }
     });

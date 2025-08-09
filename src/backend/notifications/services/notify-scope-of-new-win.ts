@@ -7,7 +7,7 @@ import { ScopeWinTemplate } from '@/lib/emails/scope-win-template';
 
 export const notifyScopeOfNewWin = async (win: Post) => {
     if (!win.scopeId) {
-        throw Error('No team id was attached to the fine.');
+        throw Error('No team id was attached to the win.');
     }
 
     const scope = await getScopeWithUsers(win.scopeId);

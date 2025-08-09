@@ -12,5 +12,5 @@ export class CreatePostDto {
 
     valueIds?: number[] | undefined = undefined;
 
-    type: PostType = 'FINE';
+    type: PostType = 'WIN';
 }

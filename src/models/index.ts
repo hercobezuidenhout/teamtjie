@@ -3,7 +3,6 @@
  */
 
 export * from './dtos/feed/create-post-dto';
-export * from './dtos/fine/create-fine-payment-dto';
 export * from './dtos/invites/create-invite-dto';
 export * from './dtos/reaction/create-reaction';
 export * from './dtos/scope/create-scope-dto';

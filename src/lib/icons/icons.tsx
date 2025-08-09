@@ -58,7 +58,6 @@ export const ICONS = {
   ChevronUpIcon: FiChevronUp,
   CloseIcon: FiX,
   CopyIcon: FiCopy,
-  CreateFineIcon: FiFilePlus,
   CreateScopeIcon: FiUsers,
   DarkModeIcon: FiMoon,
   DateIcon: FiCalendar,

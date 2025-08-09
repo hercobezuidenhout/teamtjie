@@ -5,22 +5,14 @@ import { mapPostReactionsToDto } from "../utils";
 
 interface GetFeedQuery extends Pick<PaginatedApiRequest, 'skip' | 'take'> {
     scopeIds: number[];
-    userId: string;
 }
 
-const getData = async (scopeIds: number[], skip: number, take: number, userId: string) => {
-    const paidFines = await prisma.paidFine.findMany({
-        where: {
-            userId: userId
-        }
-    });
-
+const getData = async (scopeIds: number[], skip: number, take: number) => {
     return await prisma.post.findMany({
         skip: skip,
         take: take,
         where: {
-            scopeId: { in: scopeIds },
-            id: { notIn: paidFines.map(paidFine => paidFine.fineId) }
+            scopeId: { in: scopeIds }
         },
         include: {
             issuedBy: {
@@ -100,8 +92,8 @@ const mapDataToResponse = (data: GetFeed) => data.map(({ values, scope, reaction
 
 export type GetFeedDto = ReturnType<typeof mapDataToResponse>;
 
-export const getFeed = async ({ scopeIds, skip, take, userId }: GetFeedQuery): Promise<{ data: GetFeedDto, count: number; }> => {
-    const [data, count] = await Promise.all([getData(scopeIds, skip, take, userId), getCount(scopeIds)]);
+export const getFeed = async ({ scopeIds, skip, take }: GetFeedQuery): Promise<{ data: GetFeedDto, count: number; }> => {
+    const [data, count] = await Promise.all([getData(scopeIds, skip, take), getCount(scopeIds)]);
     const feed = mapDataToResponse(data);
 
     return { data: feed, count };

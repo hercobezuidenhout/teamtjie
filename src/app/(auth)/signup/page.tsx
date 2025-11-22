@@ -15,7 +15,6 @@ const SignupPage = ({ searchParams = {} }: PageProps) => {
 
   return (
     <>
-      <AuthHeader signup={true} />
       <Flex gap={8} alignItems="center" height={{ md: '75vh', lg: '85vh' }} justifyContent="space-around">
         <VStack spacing={8}>
           <LoginPageHeader signup={true} />

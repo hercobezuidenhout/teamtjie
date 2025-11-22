@@ -73,6 +73,10 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/spaces', request.url));
   }
 
+  if (!hasSession && isRoot) {
+    return NextResponse.redirect(new URL('/login', request.url));
+  }
+
   return response;
 }
 

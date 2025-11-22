@@ -7,7 +7,6 @@ export const deleteScope = async (scopeId: number) => {
         },
         include: {
             childScopes: true,
-            featureFlagOverrides: true,
             invitations: true,
             posts: true,
             roles: true,

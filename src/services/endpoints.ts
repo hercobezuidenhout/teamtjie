@@ -1,7 +1,4 @@
 export const ENDPOINTS = {
-  featureFlags: {
-    base: '/api/feature-flags',
-  },
   invitations: {
     base: '/api/invitations',
   },

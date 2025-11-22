@@ -1,6 +1,5 @@
 import { Flex, VStack } from '@chakra-ui/react';
 import { PageProps } from '@/app/page-props';
-import { AuthHeader } from '@/app/(auth)/components/AuthHeader';
 import { LoginPageHeader } from '@/app/(auth)/components/LoginPageHeader';
 import { LoginForm } from '@/lib/forms/LoginForm/LoginForm';
 

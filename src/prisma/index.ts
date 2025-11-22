@@ -34,7 +34,6 @@ export * from './commands/upsert-scope-value';
 export * from './queries/get-all-scopes-for-parent-scope';
 export * from './queries/get-child-scopes';
 export * from './queries/get-deactivated-user-by-email';
-export * from './queries/get-feature-flags';
 export * from './queries/get-feed';
 export * from './queries/get-invitation-by-hash';
 export * from './queries/get-post-usage-for-scope';

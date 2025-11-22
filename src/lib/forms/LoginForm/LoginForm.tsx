@@ -17,17 +17,17 @@ export const LoginForm = ({ redirectTo = '/', signup, width }: LoginFormProps) =
       <VStack spacing={3} alignItems="stretch" gap={8}>
         <VStack alignItems="stretch" gap={5}>
           {process.env.NODE_ENV && process.env.NODE_ENV === 'development' ? (
-             <DevLogin width={width} redirectTo={redirectTo} />
+            <DevLogin width={width} redirectTo={redirectTo} />
           ) : (
             <OtpLogin width={width} redirectTo={redirectTo} />
           )}
-          
+
         </VStack>
       </VStack>
       <Flex justifyContent="space-around">
         {signup ? (
           <Text>Already have an account? <Link href="/login"><b>Login</b></Link></Text>
-        ): (
+        ) : (
           <Text>Don&apos;t have an account? <Link href="/signup"><b>Sign Up</b></Link></Text>
         )}
       </Flex>

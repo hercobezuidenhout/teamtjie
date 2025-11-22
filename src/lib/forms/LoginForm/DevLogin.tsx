@@ -19,7 +19,7 @@ interface DevLoginProps {
 }
 
 export const DevLogin = ({ redirectTo, width }: DevLoginProps) => {
-  const DEFAULT_PASSWORD = 'afoxjumpedthepark';
+  const DEFAULT_PASSWORD = 'supersecret';
   const supabase = useSupabaseClient();
   const formMethods = useForm<DevLoginFormData>();
   const email = formMethods.watch('email');

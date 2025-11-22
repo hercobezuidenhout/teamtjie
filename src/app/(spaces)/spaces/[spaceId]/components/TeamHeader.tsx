@@ -5,7 +5,6 @@ import { Avatar, HStack, Heading } from "@chakra-ui/react";
 import { Scope } from "@prisma/client";
 import { TeamCharterButton } from "./TeamCharterButton";
 import { TeamSettingsButton } from "./TeamSettingsButton";
-import { TeamInsightsButton } from "./TeamInsightsButton";
 
 interface TeamHeaderProps {
     scope: Scope;
@@ -20,7 +19,6 @@ export const TeamHeader = ({ scope }: TeamHeaderProps) => (
         <HStack>
             <ScopeMembersCard scope={scope} />
             <TeamCharterButton scope={scope} />
-            <TeamInsightsButton scope={scope} />
             <TeamSettingsButton scope={scope} />
         </HStack>
     </HStack>

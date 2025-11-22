@@ -5,7 +5,6 @@ import { GeneralSettings } from "./components/GeneralSettings/GeneralSettings";
 import { PermissionSettings } from "./components/PermissionSettings/PermissionSettings";
 import { DangerZoneSettings } from "./components/DangerZoneSettings/DangerZoneSettings";
 import { securelyGetScopeFromPageProps } from "./utils/securely-get-scope-from-page-props";
-import { EmailSettings } from "./components/EmailSettings/EmailSettings";
 
 const Page = async ({ ...rest }: PageProps) => {
     const scope = await securelyGetScopeFromPageProps({ action: 'access', ...rest });
@@ -16,7 +15,6 @@ const Page = async ({ ...rest }: PageProps) => {
             <Heading size="lg">{scope.name} Settings</Heading>
             <GeneralSettings scope={scope} />
             <PermissionSettings scope={scope} />
-            <EmailSettings scope={scope} />
             <DangerZoneSettings scope={scope} />
         </VStack>
     );

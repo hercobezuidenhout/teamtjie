@@ -10,7 +10,7 @@ export const SpacesHeader = () => (
       <HStack gap={{ base: 2, md: 5 }}>
         <NavDrawerToggle />
         <HStack>
-          <Heading display={{ base: 'none', md: 'block' }}>Teamtjie</Heading>
+          <Heading display={{ base: 'none', md: 'block' }}>✨ Teamtjie</Heading>
         </HStack>
       </HStack>
 

@@ -11,7 +11,7 @@
     "format": "prettier --write ./src",
     "barrel": "barrelsby --delete --config barrelsby.json",
     "generate-prisma": "prisma generate --schema=./src/prisma/schema.prisma",
-    "postinstall": "prisma migrate deploy && prisma generate --schema=./src/prisma/schema.prisma",
+    "postinstall": "prisma generate --schema=./src/prisma/schema.prisma",
     "migrate-dev": "prisma migrate dev --create-only"
   },
   "dependencies": {

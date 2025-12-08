@@ -4,6 +4,7 @@ import { PageProps } from '@/app/page-props';
 import { VStack } from '@chakra-ui/react';
 import { Feed } from './components/Feed';
 import { PostForm } from '@/lib/forms/PostForm/PostForm';
+import { HealthCheckBanner } from './components/HealthCheckBanner';
 
 const Page = async ({ params }: PageProps) => {
     const data = await getUserAndScopes();
@@ -25,6 +26,7 @@ const Page = async ({ params }: PageProps) => {
 
     return (
         <VStack width={['full', 'md', '2xl']} m="auto" spacing={5}>
+            <HealthCheckBanner />
             <PostForm scope={currentSpace} />
             <Feed scopeId={spaceId} />
         </VStack>

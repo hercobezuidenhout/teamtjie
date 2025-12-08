@@ -15,7 +15,8 @@ export const useHealthChecksQuery = ({
       const params = new URLSearchParams({
         scopeId: scopeId.toString(),
       });
-      return get<HealthCheck>(`/api/health-checks?${params}`, { signal });
+      const response = await get<HealthCheck[]>(`/api/health-checks?${params}`, { signal });
+      return response || [];
     },
   });
 };

@@ -18,9 +18,13 @@ export const HealthCheckBanner = () => {
 
   const { data: healthChecks } = useHealthChecksQuery({ scopeId });
 
-  const incompleteChecks = healthChecks?.filter(
+  if (!healthChecks || !Array.isArray(healthChecks)) {
+    return null;
+  }
+
+  const incompleteChecks = healthChecks.filter(
     (check) => check.responses.length === 0 || !check.responses[0].completedAt
-  ) || [];
+  );
 
   if (incompleteChecks.length === 0) {
     return null;
@@ -43,7 +47,6 @@ export const HealthCheckBanner = () => {
       borderRadius="md"
       cursor="pointer"
       onClick={handleClick}
-      _hover={{ backgroundColor: 'blue.50' }}
     >
       <AlertIcon />
       <HStack flex="1" justify="space-between" align="center">
@@ -53,7 +56,7 @@ export const HealthCheckBanner = () => {
             You have {incompleteChecks.length} health {incompleteChecks.length === 1 ? 'check' : 'checks'} to complete
           </AlertDescription>
         </div>
-        <Button size="sm" colorScheme="blue">
+        <Button colorScheme="blue">
           Complete
         </Button>
       </HStack>

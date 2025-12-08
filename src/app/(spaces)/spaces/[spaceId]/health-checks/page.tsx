@@ -63,13 +63,16 @@ export default function HealthChecksPage() {
     );
   }
 
-  const incompleteChecks = healthChecks?.filter(
-    (check) => check.responses.length === 0 || !check.responses[0].completedAt
-  ) || [];
+  // Ensure we have a valid array
+  const validHealthChecks = Array.isArray(healthChecks) ? healthChecks : [];
 
-  const completedChecks = healthChecks?.filter(
-    (check) => check.responses.length > 0 && check.responses[0].completedAt
-  ) || [];
+  const incompleteChecks = validHealthChecks.filter(
+    (check) => check.responses?.length === 0 || !check.responses?.[0]?.completedAt
+  );
+
+  const completedChecks = validHealthChecks.filter(
+    (check) => check.responses?.length > 0 && check.responses[0]?.completedAt
+  );
 
   return (
     <VStack width={['full', 'md', '2xl']} m="auto" spacing={5}>
@@ -139,7 +142,7 @@ export default function HealthChecksPage() {
         </VStack>
       )}
 
-      {healthChecks?.length === 0 && (
+      {validHealthChecks.length === 0 && (
         <Card>
           <CardBody>
             <VStack py={8}>

@@ -49,12 +49,13 @@ export default function HealthCheckPage() {
 
   const [currentStep, setCurrentStep] = useState(0);
   const [answers, setAnswers] = useState<Answer[]>([]);
+  const [initialized, setInitialized] = useState(false);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const cancelRef = useRef<HTMLButtonElement>(null);
 
-  // Initialize answers from existing response or empty
+  // Initialize answers from existing response or empty (only once per checkId)
   useEffect(() => {
-    if (healthCheck?.questions) {
+    if (healthCheck?.questions && healthCheck.questions.length > 0 && !initialized) {
       const existingResponse = healthCheck.responses?.[0];
 
       const initialAnswers = healthCheck.questions.map((q) => {
@@ -69,13 +70,36 @@ export default function HealthCheckPage() {
       });
 
       setAnswers(initialAnswers);
+      setCurrentStep(0); // Reset to first question on new health check
+      setInitialized(true);
     }
-  }, [healthCheck]);
+  }, [healthCheck, checkId, initialized]);
 
-  if (isLoading || !healthCheck || !healthCheck.questions || answers.length === 0) {
+  // Reset initialized flag when checkId changes
+  useEffect(() => {
+    setInitialized(false);
+  }, [checkId]);
+
+  if (isLoading) {
     return (
       <VStack minH="100vh" justify="center">
         <Text>Loading health check...</Text>
+      </VStack>
+    );
+  }
+
+  if (!healthCheck || !healthCheck.questions || healthCheck.questions.length === 0) {
+    return (
+      <VStack minH="100vh" justify="center">
+        <Text>Health check not found</Text>
+      </VStack>
+    );
+  }
+
+  if (answers.length === 0) {
+    return (
+      <VStack minH="100vh" justify="center">
+        <Text>Loading questions...</Text>
       </VStack>
     );
   }
@@ -323,9 +347,10 @@ export default function HealthCheckPage() {
         isOpen={isOpen}
         leastDestructiveRef={cancelRef}
         onClose={onClose}
+        isCentered
       >
-        <AlertDialogOverlay>
-          <AlertDialogContent>
+        <AlertDialogOverlay zIndex={10000}>
+          <AlertDialogContent zIndex={10001}>
             <AlertDialogHeader fontSize="lg" fontWeight="bold">
               Exit Health Check?
             </AlertDialogHeader>

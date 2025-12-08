@@ -14,5 +14,7 @@ export const useHealthCheckQuery = ({
     queryFn: async ({ signal }) => {
       return get<HealthCheck>(`/api/health-checks/${healthCheckId}`, { signal });
     },
+    staleTime: 0, // Always refetch
+    refetchOnMount: true,
   });
 };

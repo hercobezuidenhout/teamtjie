@@ -4,7 +4,6 @@ import { PageProps } from '@/app/page-props';
 import { VStack } from '@chakra-ui/react';
 import { Feed } from './components/Feed';
 import { PostForm } from '@/lib/forms/PostForm/PostForm';
-import { TeamHeader } from './components/TeamHeader';
 
 const Page = async ({ params }: PageProps) => {
     const data = await getUserAndScopes();
@@ -26,7 +25,6 @@ const Page = async ({ params }: PageProps) => {
 
     return (
         <VStack width={['full', 'md', '2xl']} m="auto" spacing={5}>
-            <TeamHeader scope={currentSpace} />
             <PostForm scope={currentSpace} />
             <Feed scopeId={spaceId} />
         </VStack>

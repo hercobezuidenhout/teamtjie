@@ -20,7 +20,7 @@ const Layout = async ({ children }: PropsWithChildren) => {
 
     return (
         <HydrationBoundary state={dehydrate(queryClient)}>
-            <VStack align="stretch" width="full" paddingX={{ base: 2, md: 0 }}>
+            <VStack align="stretch" width="full">
                 <MeHeader />
                 <VStack alignItems="stretch" width="full" maxW={{ base: 'full', md: '2xl' }} margin="auto">
                     {children}

@@ -32,15 +32,15 @@ export const ScopeValueAutoComplete = ({
   };
 
   return (
-    <VStack align="flex-start">
+    <VStack align="stretch" spacing={3} width="full">
       {options.map(({ id, name }, index) => (
         <FormControl key={id} as={HStack} align="center">
-          <FormLabel htmlFor={`value-${id}`}>
-            <HStack>
-              <Tag borderRadius="full" variant="primary">
+          <FormLabel htmlFor={`value-${id}`} mb={0} cursor="pointer">
+            <HStack spacing={3}>
+              <Tag borderRadius="full" variant="primary" size="sm">
                 {++index}
               </Tag>
-              <Text>{name}</Text>
+              <Text fontSize="sm">{name}</Text>
             </HStack>
           </FormLabel>
           <Spacer />

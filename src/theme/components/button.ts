@@ -16,6 +16,31 @@ const variantSecondary: SystemStyleFunction = (props) => {
   };
 };
 
+const variantPrimary: SystemStyleFunction = (props) => {
+  return {
+    bg: 'chakra-primary-color',
+    color: 'chakra-inverse-text',
+    _hover: {
+      bg: mode('blue.500', 'blue.200')(props),
+      _disabled: {
+        bg: 'chakra-primary-color',
+      },
+    },
+    _active: {
+      bg: mode('blue.600', 'blue.300')(props),
+    },
+  };
+};
+
+const variantGhost: SystemStyleFunction = (props) => {
+  return {
+    color: 'inherit',
+    _hover: {
+      bg: mode('gray.50', 'whiteAlpha.200')(props),
+    },
+  };
+};
+
 export const Button: ComponentStyleConfig = {
   baseStyle: { borderRadius: '3xl' },
   defaultProps: { variant: 'secondary' },
@@ -24,26 +49,11 @@ export const Button: ComponentStyleConfig = {
     sm: { p: 1 },
   },
   variants: {
-    primary: {
-      bg: 'chakra-primary-color',
-      color: 'white',
-      _hover: {
-        bg: 'chakra-primary-color',
-        _disabled: {
-          bg: 'chakra-primary-color',
-        },
-      },
-      _active: { bg: 'primary.400' },
-    },
+    primary: variantPrimary,
     secondary: variantSecondary,
     outline: {
       borderColor: 'inherit',
     },
-    ghost: {
-      color: 'inherit',
-      _hover: {
-        bg: 'gray.50'
-      },
-    },
+    ghost: variantGhost,
   },
 };

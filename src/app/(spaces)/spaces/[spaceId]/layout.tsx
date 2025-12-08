@@ -19,7 +19,7 @@ const headerHeight = '4rem';
 const footerHeight = '0rem';
 const mainHeight = `calc(100vh - ${headerHeight} - ${footerHeight})`;
 
-export interface SpacesLayoutProps extends PropsWithChildren {
+interface SpacesLayoutProps extends PropsWithChildren {
   menu: ReactNode;
   navigation: ReactNode;
 }

@@ -7,7 +7,7 @@ import {
   MenuItem,
   MenuList,
 } from '@chakra-ui/menu';
-import { Button, HStack, useBreakpointValue } from '@chakra-ui/react';
+import { Button, HStack } from '@chakra-ui/react';
 import { Icon } from '@chakra-ui/icons';
 import { ICONS } from '@/lib/icons/icons';
 import { AvatarTag } from '@/lib/tags/AvatarTag/AvatarTag';
@@ -19,7 +19,6 @@ import { useCurrentUserQuery } from '@/services/user/queries/use-current-user-qu
 export const ProfileMenu = () => {
   const { auth } = useSupabaseClient();
   const { data: currentUser } = useCurrentUserQuery();
-  const hideName = useBreakpointValue({ base: true, md: false });
   const router = useRouter();
 
   const handleSignOutClick = () => {
@@ -33,10 +32,10 @@ export const ProfileMenu = () => {
         aria-label="Profile"
         variant="ghost"
         pl={0}
-        pr={4}
+        pr={{ base: 0, md: 0 }}
       >
         <HStack>
-          <AvatarTag hideLabel={hideName} avatar={currentUser} size="lg" />
+          <AvatarTag hideLabel={true} avatar={currentUser} size="lg" />
         </HStack>
       </MenuButton>
       <MenuList>

@@ -5,9 +5,9 @@ import { SupportMenu } from './SupportMenu';
 import { NavDrawerToggle } from './NavDrawerToggle';
 
 export const SpacesHeader = () => (
-  <VStack position="fixed" alignItems="stretch" width="full" gap="3" zIndex="10" backgroundColor="white" borderBottomColor="chakra-subtle-bg" borderWidth="1px">
-    <HStack width='full' margin="auto" py={1} px={3} justifyContent="space-between">
-      <HStack gap={{ base: 2, md: 5 }}>
+  <VStack position="fixed" alignItems="stretch" width="full" gap="3" zIndex="10">
+    <HStack width='full' margin="auto" py={{ base: 2, md: 2 }} px={{ base: 2, md: 3 }} justifyContent="space-between" backgroundColor="chakra-body-bg">
+      <HStack gap={{ base: 0, md: 2 }}>
         <NavDrawerToggle />
         <HStack>
           <Heading display={{ base: 'none', md: 'block' }}>✨ Teamtjie</Heading>
@@ -15,7 +15,7 @@ export const SpacesHeader = () => (
       </HStack>
 
 
-      <HStack gap={{ base: 2, md: 5 }}>
+      <HStack gap={{ base: 2, md: 2 }}>
         <HStack>
           <SupportMenu />
         </HStack>

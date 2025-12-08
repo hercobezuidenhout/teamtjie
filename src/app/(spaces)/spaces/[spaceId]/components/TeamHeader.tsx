@@ -12,9 +12,9 @@ interface TeamHeaderProps {
 
 export const TeamHeader = ({ scope }: TeamHeaderProps) => (
     <HStack width="full" justifyContent="space-between">
-        <HStack spacing={5}>
-            <Avatar size="md" name={scope.name} src={scope.image ?? undefined} />
-            <Heading size="lg">{scope.name}</Heading>
+        <HStack spacing={{ base: 2, md: 4 }}>
+            <Avatar size={{ base: "sm", md: "md" }} name={scope.name} src={scope.image ?? undefined} />
+            <Heading size={{ base: 'md', md: 'lg' }}>{scope.name}</Heading>
         </HStack>
         <HStack>
             <ScopeMembersCard scope={scope} />

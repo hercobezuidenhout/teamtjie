@@ -38,10 +38,6 @@ export const AppProviders = ({
   const [supabaseClient] = useState(getBrowserClient);
   const [queryClient] = useState(getQueryClient);
 
-  if (typeof localStorage !== 'undefined') {
-    localStorage.setItem("chakra-ui-color-mode", "light");
-  }
-
   return (
     <ChakraProvider theme={theme}>
       <QueryClientProvider client={queryClient}>

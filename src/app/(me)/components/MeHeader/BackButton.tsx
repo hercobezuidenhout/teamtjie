@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, Icon } from "@chakra-ui/react";
+import { Icon, IconButton } from "@chakra-ui/react";
 import { useRouter } from "next/navigation";
 import { FiHome } from "react-icons/fi";
 
@@ -11,6 +11,6 @@ export const BackButton = () => {
     const navigateToHome = () => router.push(HOME);
 
     return (
-        <Button onClick={navigateToHome} leftIcon={<Icon as={FiHome} />} variant="secondary">Back to App</Button>
+        <IconButton aria-label="Back to app" onClick={navigateToHome} icon={<Icon as={FiHome} />} variant="secondary" />
     );
 };

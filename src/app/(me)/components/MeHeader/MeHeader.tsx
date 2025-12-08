@@ -6,8 +6,8 @@ import { BackButton } from "./BackButton";
 
 export const MeHeader = () => (
     <VStackStretch>
-        <HStack width="full" margin="auto" py={1} px={3} justifyContent="space-between" backgroundColor="white" borderBottomColor="chakra-subtle-bg" borderWidth="1px">
-            <HStack gap={{ base: 2, md: 5 }}>
+        <HStack width="full" margin="auto" py={{ base: 2, md: 2 }} px={{ base: 2, md: 3 }} justifyContent="space-between" backgroundColor="chakra-body-bg">
+            <HStack gap={{ base: 0, md: 2 }}>
                 <HStack>
                     <Heading display={{ base: 'none', md: 'block' }}>✨ Teamtjie</Heading>
                 </HStack>
@@ -16,7 +16,7 @@ export const MeHeader = () => (
             </HStack>
 
 
-            <HStack gap={{ base: 2, md: 5 }}>
+            <HStack gap={{ base: 2, md: 2 }}>
                 <HStack>
                     <SupportMenu />
                 </HStack>

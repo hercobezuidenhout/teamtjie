@@ -8,6 +8,7 @@ import { Scope } from "@prisma/client";
 import { CreatePostDto } from "@/models";
 import { useCreatePostMutation } from "@/services/feed/mutations/use-create-post-mutation";
 import { useValidatePostMutation } from "@/services/feed/mutations/use-validate-post-mutation";
+import { useScopeValuesQuery } from '@/services/scope/queries/use-scope-values-query';
 
 interface PostModalProps extends Pick<ModalProps, 'isOpen' | 'onClose'> {
     initialScope: Scope;
@@ -21,10 +22,12 @@ export const PostModal = ({ isOpen, onClose, initialPostType, initialScope }: Po
     const [selectedUser, setSelectedUser] = useState('');
     const [selectedScope, setSelectedScope] = useState<Scope>(initialScope);
     const [description, setDescription] = useState('');
+    const [selectedValues, setSelectedValues] = useState<number[]>([]);
     const { mutateAsync: createPost, isPending: isCreating } = useCreatePostMutation();
     const { mutateAsync: validatePost } = useValidatePostMutation();
     const [changeScope, setChangeScope] = useState(false);
     const { isOpen: isValidationModalOpen, onOpen: openValidationModal, onClose: closeValidationModal } = useDisclosure();
+    const { data: scopeValuesData } = useScopeValuesQuery(selectedScope.id);
 
     const handleScopeChange = (scope: Scope | undefined) => {
         if (scope) {
@@ -42,7 +45,7 @@ export const PostModal = ({ isOpen, onClose, initialPostType, initialScope }: Po
             scopeId: selectedScope.id,
             type: postType,
             issuedToId: selectedUser ? selectedUser : undefined,
-            valueIds: []
+            valueIds: selectedValues.length > 0 ? selectedValues : undefined
         };
 
         await createPost(post);
@@ -71,6 +74,7 @@ export const PostModal = ({ isOpen, onClose, initialPostType, initialScope }: Po
             setSelectedScope(initialScope);
             setSelectedUser('');
             setDescription('');
+            setSelectedValues([]);
         };
     }, [initialPostType]);
 
@@ -94,6 +98,9 @@ export const PostModal = ({ isOpen, onClose, initialPostType, initialScope }: Po
                                 description={description}
                                 setDescription={setDescription}
                                 isLoading={isCreating}
+                                selectedValues={selectedValues}
+                                onSelectedValuesChange={setSelectedValues}
+                                availableValues={scopeValuesData ?? []}
                             />
 
                         </>

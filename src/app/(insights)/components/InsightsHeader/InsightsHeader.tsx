@@ -8,8 +8,8 @@ export const InsightsHeader = () => {
 
     return (
         <VStackStretch>
-            <HStack width={{ base: 'full', md: 'container.xl' }} margin="auto" py={3} justifyContent="space-between">
-                <HStack gap={{ base: 2, md: 5 }}>
+            <HStack width="full" margin="auto" py={{ base: 2, md: 2 }} px={{ base: 2, md: 3 }} justifyContent="space-between" backgroundColor="chakra-body-bg">
+                <HStack gap={{ base: 0, md: 2 }}>
                     <HStack>
                         <Heading display={{ base: 'none', md: 'block' }}>✨ Teamtjie</Heading>
                     </HStack>
@@ -18,7 +18,7 @@ export const InsightsHeader = () => {
                 </HStack>
 
 
-                <HStack gap={{ base: 2, md: 5 }}>
+                <HStack gap={{ base: 2, md: 2 }}>
                     <HStack>
                         <SupportMenu />
                     </HStack>

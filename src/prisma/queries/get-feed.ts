@@ -14,7 +14,15 @@ const getData = async (scopeIds: number[], skip: number, take: number) => {
         where: {
             scopeId: { in: scopeIds }
         },
-        include: {
+        select: {  // Changed from include to select for better performance
+            id: true,
+            description: true,
+            type: true,
+            scopeId: true,
+            issuedById: true,
+            issuedToId: true,
+            createdAt: true,
+            updatedAt: true,
             issuedBy: {
                 select: {
                     id: true,
@@ -30,40 +38,47 @@ const getData = async (scopeIds: number[], skip: number, take: number) => {
                 }
             },
             reactions: {
-                include: {
+                select: {
+                    postId: true,
+                    reaction: true,
+                    userId: true,
+                    createdAt: true,
                     user: {
                         select: {
                             id: true,
                             name: true
                         }
                     }
-                },
+                }
             },
             values: {
-                include: {
+                select: {
                     scopeValue: {
                         select: {
                             name: true,
                             description: true
                         }
-                    },
+                    }
                 },
                 orderBy: {
                     scopeValue: {
                         name: 'asc'
                     }
-                },
+                }
             },
             scope: {
-                include: {
+                select: {
+                    id: true,
+                    name: true,
+                    parentScopeId: true,
                     parentScope: {
                         select: {
                             id: true,
                             name: true
                         }
                     }
-                },
-            },
+                }
+            }
         },
         orderBy: {
             createdAt: 'desc'

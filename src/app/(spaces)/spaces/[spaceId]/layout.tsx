@@ -24,6 +24,10 @@ export interface SpacesLayoutProps extends PropsWithChildren {
   navigation: ReactNode;
 }
 
+/**
+ * Layout for space pages
+ * Note: Last visited space tracking is handled in middleware
+ */
 const SpacesLayout = async ({ children, menu, params }: SpacesLayoutProps & PageProps) => {
   const data = await getUserAndScopes();
   const spaceId = params['spaceId'];
@@ -32,12 +36,30 @@ const SpacesLayout = async ({ children, menu, params }: SpacesLayoutProps & Page
     redirect('/login');
   }
 
+  // Check if user has access to this scope
+  const numericSpaceId = Number(spaceId);
+  const userHasAccess = data.scopes.some((scope: any) => scope.id === numericSpaceId);
+
+  if (!userHasAccess) {
+    // User doesn't have access to this scope (deleted or no permission)
+    // Redirect to /spaces with a query param to clear the cookie
+    redirect('/spaces?clearCookie=true');
+  }
+
   const queryClient = new QueryClient();
 
   queryClient.setQueryData(['users', 'current'], data?.user);
   queryClient.setQueryData(['scopes'], data?.scopes);
 
-  const scope = await getScopeProfile(Number(spaceId));
+  // Try to get scope profile, handle if it doesn't exist
+  let scope;
+  try {
+    scope = await getScopeProfile(numericSpaceId);
+  } catch (error) {
+    // Scope doesn't exist in database (deleted)
+    // Redirect to /spaces with a query param to clear the cookie
+    redirect('/spaces?clearCookie=true');
+  }
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>

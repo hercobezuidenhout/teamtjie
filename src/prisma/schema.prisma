@@ -116,6 +116,8 @@ model ScopeRole {
   user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@id([role, scopeId, userId])
+  @@index([userId])   // Speed up user scope lookups
+  @@index([scopeId])  // Speed up scope member lookups and counts
 }
 
 model Invitation {
@@ -144,6 +146,10 @@ model Post {
   scopeId     Int
   createdAt   DateTime       @default(now())
   updatedAt   DateTime       @default(now()) @updatedAt
+
+  @@index([scopeId, createdAt(sort: Desc)])  // Speed up feed queries
+  @@index([issuedById])                       // Speed up user post lookups
+  @@index([issuedToId])                       // Speed up recipient lookups
 }
 
 model PostReaction {
@@ -155,6 +161,7 @@ model PostReaction {
   createdAt DateTime @default(now())
 
   @@id([postId, userId, reaction])
+  @@index([postId])  // Speed up reaction lookups
 }
 
 model PostValue {

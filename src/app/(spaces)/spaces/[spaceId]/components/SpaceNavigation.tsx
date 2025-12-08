@@ -33,6 +33,12 @@ export const SpaceNavigation = () => {
       onClick: () => router.push(`/spaces/${spaceId}/charters/${spaceId}`)
     },
     {
+      label: 'Health Checks',
+      icon: ICONS.ActivityIcon,
+      path: `/spaces/${spaceId}/health-checks`,
+      onClick: () => router.push(`/spaces/${spaceId}/health-checks`)
+    },
+    {
       label: 'Members',
       icon: ICONS.TeamIcon,
       path: null,

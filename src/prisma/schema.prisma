@@ -57,6 +57,8 @@ model User {
   acceptedInvites         AcceptedInvite[]
   notificationPreferences UserNotificationPreference[]
   dailySentiments         DailySentiment[]
+  createdHealthChecks     HealthCheck[]
+  healthCheckResponses    HealthCheckResponse[]
 }
 
 model DeactivateUser {
@@ -86,6 +88,7 @@ model Scope {
   resendDetails        ScopeResendDetails[]
   dailySentiments      DailySentiment[]
   settings             ScopeSettings?
+  healthChecks         HealthCheck[]
 }
 
 model ScopeValue {
@@ -249,4 +252,57 @@ model ScopeSettings {
   scopeId              Int     @unique
   scope                Scope   @relation(fields: [scopeId], references: [id], onDelete: Cascade)
   showAverageSentiment Boolean @default(false)
+}
+
+model HealthCheck {
+  id          Int                     @id @default(autoincrement())
+  scopeId     Int
+  scope       Scope                   @relation(fields: [scopeId], references: [id], onDelete: Cascade)
+  templateId  String
+  createdAt   DateTime                @default(now())
+  createdBy   String
+  creator     User                    @relation(fields: [createdBy], references: [id], onDelete: Cascade)
+  questions   HealthCheckQuestion[]
+  responses   HealthCheckResponse[]
+
+  @@index([scopeId, createdAt(sort: Desc)])
+}
+
+model HealthCheckQuestion {
+  id            Int                   @id @default(autoincrement())
+  healthCheckId Int
+  healthCheck   HealthCheck           @relation(fields: [healthCheckId], references: [id], onDelete: Cascade)
+  title         String
+  description   String                @db.Text
+  order         Int
+  answers       HealthCheckAnswer[]
+
+  @@index([healthCheckId])
+}
+
+model HealthCheckResponse {
+  id            Int                   @id @default(autoincrement())
+  healthCheckId Int
+  healthCheck   HealthCheck           @relation(fields: [healthCheckId], references: [id], onDelete: Cascade)
+  userId        String
+  user          User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  completedAt   DateTime?
+  answers       HealthCheckAnswer[]
+
+  @@unique([healthCheckId, userId])
+  @@index([healthCheckId])
+  @@index([userId])
+}
+
+model HealthCheckAnswer {
+  id         Int                   @id @default(autoincrement())
+  responseId Int
+  response   HealthCheckResponse   @relation(fields: [responseId], references: [id], onDelete: Cascade)
+  questionId Int
+  question   HealthCheckQuestion   @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  score      Int
+  note       String?               @db.Text
+
+  @@unique([responseId, questionId])
+  @@index([questionId])
 }

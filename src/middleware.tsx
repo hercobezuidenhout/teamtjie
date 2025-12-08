@@ -1,5 +1,6 @@
 import { type CookieOptions, createServerClient } from '@supabase/ssr';
 import { type NextRequest, NextResponse } from 'next/server';
+import { getFirstSpaceId } from '@/prisma/queries/get-first-space-id';
 
 const protectedRoutes = [/^\/spaces/];
 
@@ -70,6 +71,28 @@ export async function middleware(request: NextRequest) {
   const isRoot = pathname === '/';
 
   if (hasSession && isRoot) {
+    // Check for last visited space in cookie
+    const lastSpaceId = request.cookies.get('last-space-id')?.value;
+
+    if (lastSpaceId) {
+      // Direct redirect to last visited space
+      return NextResponse.redirect(new URL(`/spaces/${lastSpaceId}`, request.url));
+    }
+
+    // Fallback: Get user's first space from database
+    try {
+      const userId = session.data.session.user.id;
+      const firstSpaceId = await getFirstSpaceId(userId);
+
+      if (firstSpaceId) {
+        // Direct redirect to first space
+        return NextResponse.redirect(new URL(`/spaces/${firstSpaceId}`, request.url));
+      }
+    } catch (error) {
+      console.error('Error getting first space:', error);
+    }
+
+    // Final fallback: redirect to /spaces (which will redirect to create)
     return NextResponse.redirect(new URL('/spaces', request.url));
   }
 

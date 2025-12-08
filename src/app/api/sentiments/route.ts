@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSession } from '@/app/utils';
 import prisma from '@/prisma/prisma';
 
+export const dynamic = 'force-dynamic';
+
 // GET /api/sentiments?scopeId={id}&date={YYYY-MM-DD}
 // Returns user's latest sentiment for specified date (defaults to today)
 export async function GET(request: NextRequest) {

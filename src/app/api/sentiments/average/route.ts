@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSession } from '@/app/utils';
 import prisma from '@/prisma/prisma';
 
+export const dynamic = 'force-dynamic';
+
 // GET /api/sentiments/average?scopeId={id}&date={YYYY-MM-DD}
 // Returns average sentiment for scope on date
 export async function GET(request: NextRequest) {

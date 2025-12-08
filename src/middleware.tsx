@@ -83,6 +83,19 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/spaces', request.url));
   }
 
+  // Handle invalid scope cookie clearing
+  const isSpacesPage = pathname === '/spaces';
+  const clearCookie = request.nextUrl.searchParams.get('clearCookie');
+  if (hasSession && isSpacesPage && clearCookie === 'true') {
+    // Clear the invalid cookie and redirect without the query param
+    const redirectResponse = NextResponse.redirect(new URL('/spaces', request.url));
+    redirectResponse.cookies.set('last-space-id', '', {
+      maxAge: 0,
+      path: '/',
+    });
+    return redirectResponse;
+  }
+
   // Track last visited space by setting cookie when visiting space pages
   const isSpacePage = /^\/spaces\/\d+/.test(pathname);
   if (hasSession && isSpacePage) {

@@ -12,8 +12,8 @@ import { SpacesProviders } from './providers';
 import { redirect } from 'next/navigation';
 import { PageProps } from '@/app/page-props';
 import { getScopeProfile } from '@/prisma';
+import { SpaceNavigation } from './components/SpaceNavigation';
 import { NavDrawer } from './components/NavDrawer';
-import { TeamList } from './components/TeamList';
 
 const headerHeight = '4rem';
 const footerHeight = '0rem';
@@ -21,7 +21,6 @@ const mainHeight = `calc(100vh - ${headerHeight} - ${footerHeight})`;
 
 interface SpacesLayoutProps extends PropsWithChildren {
   menu: ReactNode;
-  navigation: ReactNode;
 }
 
 /**
@@ -51,10 +50,9 @@ const SpacesLayout = async ({ children, menu, params }: SpacesLayoutProps & Page
   queryClient.setQueryData(['users', 'current'], data?.user);
   queryClient.setQueryData(['scopes'], data?.scopes);
 
-  // Try to get scope profile, handle if it doesn't exist
-  let scope;
+  // Validate that scope exists in database, handle if it doesn't exist
   try {
-    scope = await getScopeProfile(numericSpaceId);
+    await getScopeProfile(numericSpaceId);
   } catch (error) {
     // Scope doesn't exist in database (deleted)
     // Redirect to /spaces with a query param to clear the cookie
@@ -69,19 +67,18 @@ const SpacesLayout = async ({ children, menu, params }: SpacesLayoutProps & Page
           <Flex as="main" maxW="container.xl" width="full" marginInline="auto" marginTop={16}>
             <Box
               as="nav"
+              display={{ base: 'none', md: 'block' }}
               alignItems="stretch"
-              w={{ base: 0, md: 'xs' }}
-              minW={{ base: 0, md: 'xs' }}
-              visibility={{ base: 'collapse', md: 'visible' }}
+              w="sm"
+              minW="xs"
               maxHeight={mainHeight}
-              data-testid="menu-container"
               py={{ base: 0, md: 8 }}
               px={{ base: 0, md: 4 }}
               position="sticky"
               top={headerHeight}
             >
               <NavDrawer>
-                <TeamList scope={scope} />
+                <SpaceNavigation />
               </NavDrawer>
             </Box>
             <Box

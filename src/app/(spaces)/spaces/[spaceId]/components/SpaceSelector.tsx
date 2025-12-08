@@ -13,28 +13,35 @@ import {
   Text,
   useBreakpointValue,
 } from '@chakra-ui/react';
-import React from 'react';
+import React, { useMemo } from 'react';
 import { AvatarTag } from '@/lib/tags/AvatarTag/AvatarTag';
 import { useScopes } from '@/contexts/ScopeProvider';
 import { ICONS } from '@/lib/icons/icons';
 import { Scope } from '@prisma/client';
 import { useRouter } from 'next/navigation';
 
-
-export interface SpaceSelectorProps {
-  spaces: Scope[];
-}
-
-export const SpaceSelector = ({ spaces }: SpaceSelectorProps) => {
+export const SpaceSelector = () => {
   const {
     current: { space: activeSpace },
+    scopes,
   } = useScopes();
   const router = useRouter();
   const hideLabel = useBreakpointValue<boolean>({ base: true, sm: false });
 
+  // Filter for top-level spaces only (no parent scope)
+  const topLevelSpaces = useMemo(
+    () => scopes?.filter(scope => !scope.parentScopeId) || [],
+    [scopes]
+  );
+
   const handleSpaceClick = (space: Scope) => {
     router.push(`/spaces/${space.id}`);
   };
+
+  // Don't render if no active space (e.g., during SSR or outside provider)
+  if (!activeSpace || activeSpace.id === 0) {
+    return null;
+  }
 
   return (
     <Menu>
@@ -58,7 +65,7 @@ export const SpaceSelector = ({ spaces }: SpaceSelectorProps) => {
         )}
       </MenuButton>
       <MenuList>
-        {spaces.map((space) => (
+        {topLevelSpaces.map((space) => (
           <MenuItem
             onClick={() => handleSpaceClick(space)}
             key={space.id}

@@ -1,6 +1,5 @@
 import { type CookieOptions, createServerClient } from '@supabase/ssr';
 import { type NextRequest, NextResponse } from 'next/server';
-import { getFirstSpaceId } from '@/prisma/queries/get-first-space-id';
 
 const protectedRoutes = [/^\/spaces/];
 
@@ -75,25 +74,34 @@ export async function middleware(request: NextRequest) {
     const lastSpaceId = request.cookies.get('last-space-id')?.value;
 
     if (lastSpaceId) {
-      // Direct redirect to last visited space
+      // Direct redirect to last visited space (cookie-based, instant)
       return NextResponse.redirect(new URL(`/spaces/${lastSpaceId}`, request.url));
     }
 
-    // Fallback: Get user's first space from database
-    try {
-      const userId = session.data.session.user.id;
-      const firstSpaceId = await getFirstSpaceId(userId);
-
-      if (firstSpaceId) {
-        // Direct redirect to first space
-        return NextResponse.redirect(new URL(`/spaces/${firstSpaceId}`, request.url));
-      }
-    } catch (error) {
-      console.error('Error getting first space:', error);
-    }
-
-    // Final fallback: redirect to /spaces (which will redirect to create)
+    // No cookie: fallback to /spaces page which will handle the redirect
+    // This only happens on first visit or after cookie expires
     return NextResponse.redirect(new URL('/spaces', request.url));
+  }
+
+  // Track last visited space by setting cookie when visiting space pages
+  const isSpacePage = /^\/spaces\/\d+/.test(pathname);
+  if (hasSession && isSpacePage) {
+    const spaceIdMatch = pathname.match(/^\/spaces\/(\d+)/);
+    if (spaceIdMatch) {
+      const spaceId = spaceIdMatch[1];
+      const currentCookie = request.cookies.get('last-space-id')?.value;
+
+      // Only set cookie if it's different (avoid unnecessary cookie updates)
+      if (currentCookie !== spaceId) {
+        response.cookies.set('last-space-id', spaceId, {
+          maxAge: 60 * 60 * 24 * 30, // 30 days
+          path: '/',
+          sameSite: 'lax',
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+        });
+      }
+    }
   }
 
   if (!hasSession && isRoot) {

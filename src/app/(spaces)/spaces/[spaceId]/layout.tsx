@@ -14,7 +14,6 @@ import { PageProps } from '@/app/page-props';
 import { getScopeProfile } from '@/prisma';
 import { NavDrawer } from './components/NavDrawer';
 import { TeamList } from './components/TeamList';
-import { cookies } from 'next/headers';
 
 const headerHeight = '4rem';
 const footerHeight = '0rem';
@@ -26,9 +25,8 @@ export interface SpacesLayoutProps extends PropsWithChildren {
 }
 
 /**
- * Layout for space pages that tracks the last visited space
- * This enables direct redirect from root (/) to the last visited space
- * eliminating the double redirect: / → /spaces → /spaces/{id}
+ * Layout for space pages
+ * Note: Last visited space tracking is handled in middleware
  */
 const SpacesLayout = async ({ children, menu, params }: SpacesLayoutProps & PageProps) => {
   const data = await getUserAndScopes();
@@ -37,15 +35,6 @@ const SpacesLayout = async ({ children, menu, params }: SpacesLayoutProps & Page
   if (!data) {
     redirect('/login');
   }
-
-  // Store last visited space in cookie for fast redirect
-  cookies().set('last-space-id', spaceId, {
-    maxAge: 60 * 60 * 24 * 30, // 30 days
-    path: '/',
-    sameSite: 'lax',
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-  });
 
   const queryClient = new QueryClient();
 

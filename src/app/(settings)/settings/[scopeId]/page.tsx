@@ -4,6 +4,7 @@ import { PageProps } from "@/app/page-props";
 import { GeneralSettings } from "./components/GeneralSettings/GeneralSettings";
 import { PermissionSettings } from "./components/PermissionSettings/PermissionSettings";
 import { DangerZoneSettings } from "./components/DangerZoneSettings/DangerZoneSettings";
+import { TeamHealthSettings } from "./components/TeamHealthSettings/TeamHealthSettings";
 import { securelyGetScopeFromPageProps } from "./utils/securely-get-scope-from-page-props";
 
 const Page = async ({ ...rest }: PageProps) => {
@@ -14,6 +15,7 @@ const Page = async ({ ...rest }: PageProps) => {
             <BackToScopeButton scope={scope} />
             <Heading size="lg">{scope.name} Settings</Heading>
             <GeneralSettings scope={scope} />
+            <TeamHealthSettings scope={scope} />
             <PermissionSettings scope={scope} />
             <DangerZoneSettings scope={scope} />
         </VStack>

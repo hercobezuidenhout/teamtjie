@@ -56,6 +56,7 @@ model User {
   issuedToPosts           Post[]                       @relation("Post_issuedByUser")
   acceptedInvites         AcceptedInvite[]
   notificationPreferences UserNotificationPreference[]
+  dailySentiments         DailySentiment[]
 }
 
 model DeactivateUser {
@@ -83,6 +84,8 @@ model Scope {
   posts                Post[]
   ScopePostPermission  ScopePostPermission[]
   resendDetails        ScopeResendDetails[]
+  dailySentiments      DailySentiment[]
+  settings             ScopeSettings?
 }
 
 model ScopeValue {
@@ -223,4 +226,27 @@ model ScopeResendDetails {
   apiKey      String
   senderName  String
   senderEmail String
+}
+
+model DailySentiment {
+  id        Int      @id @default(autoincrement())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  scopeId   Int
+  scope     Scope    @relation(fields: [scopeId], references: [id], onDelete: Cascade)
+  date      DateTime @db.Date
+  sentiment Int
+  note      String?  @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([scopeId, date])
+  @@index([userId, scopeId, createdAt(sort: Desc)])
+}
+
+model ScopeSettings {
+  id                   Int     @id @default(autoincrement())
+  scopeId              Int     @unique
+  scope                Scope   @relation(fields: [scopeId], references: [id], onDelete: Cascade)
+  showAverageSentiment Boolean @default(false)
 }

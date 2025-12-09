@@ -1,15 +1,22 @@
 import { prisma } from '../prisma';
 import { Subscription, SubscriptionStatus } from '@prisma/client';
 
-export async function getSubscriptionByScope(scopeId: number): Promise<Subscription | null> {
+export async function getUserSubscription(userId: string) {
     return prisma.subscription.findUnique({
-        where: { scopeId },
+        where: { userId },
         include: {
-            scope: {
-                select: {
-                    id: true,
-                    name: true,
-                    type: true,
+            teams: {
+                include: {
+                    scope: {
+                        select: {
+                            id: true,
+                            name: true,
+                            type: true,
+                        },
+                    },
+                },
+                orderBy: {
+                    addedAt: 'asc',
                 },
             },
             transactions: {
@@ -20,31 +27,111 @@ export async function getSubscriptionByScope(scopeId: number): Promise<Subscript
     });
 }
 
-export async function getSubscriptionByToken(token: string): Promise<Subscription | null> {
+export async function getTeamSubscriptionStatus(scopeId: number) {
+    const subscriptionScope = await prisma.subscriptionScope.findUnique({
+        where: { scopeId },
+        include: {
+            subscription: {
+                include: {
+                    user: {
+                        select: {
+                            id: true,
+                            name: true,
+                            email: true,
+                        },
+                    },
+                },
+            },
+        },
+    });
+
+    return subscriptionScope;
+}
+
+export async function getSubscriptionByReference(reference: string): Promise<Subscription | null> {
     return prisma.subscription.findUnique({
-        where: { payfastToken: token },
+        where: { reference },
     });
 }
 
-export async function hasActiveSubscription(scopeId: number): Promise<boolean> {
+export async function hasActiveSubscription(scopeId: number, userId: string): Promise<boolean> {
+    // Get user's subscription
     const subscription = await prisma.subscription.findUnique({
-        where: { scopeId },
+        where: { userId },
         select: {
             status: true,
             currentPeriodEnd: true,
-            cancelAtPeriodEnd: true,
+            teams: {
+                where: { scopeId },
+                select: { id: true },
+            },
         },
     });
 
     if (!subscription) return false;
 
-    // Active if status is ACTIVE and not expired
-    if (subscription.status === SubscriptionStatus.ACTIVE) {
-        if (!subscription.currentPeriodEnd) return true;
-        return new Date() < subscription.currentPeriodEnd;
+    // Check if subscription is active and not expired
+    if (subscription.status !== SubscriptionStatus.ACTIVE) return false;
+
+    if (subscription.currentPeriodEnd && new Date() > subscription.currentPeriodEnd) {
+        return false;
     }
 
-    return false;
+    // Check if THIS specific team is in the subscription
+    if (subscription.teams.length === 0) return false;
+
+    // Check if user is admin of this team
+    const userRole = await prisma.scopeRole.findFirst({
+        where: {
+            userId,
+            scopeId,
+            role: 'ADMIN',
+        },
+    });
+
+    return !!userRole;
+}
+
+export async function getSubscriptionTeamCount(subscriptionId: number): Promise<number> {
+    return prisma.subscriptionScope.count({
+        where: { subscriptionId },
+    });
+}
+
+export async function canAddTeamToSubscription(
+    subscriptionId: number,
+    scopeId: number,
+    userId: string
+): Promise<{ canAdd: boolean; reason?: string }> {
+    // Check 1: Subscription has < 3 teams
+    const teamCount = await getSubscriptionTeamCount(subscriptionId);
+    if (teamCount >= 3) {
+        return { canAdd: false, reason: 'MAX_TEAMS_REACHED' };
+    }
+
+    // Check 2: User is admin of team
+    const userRole = await prisma.scopeRole.findFirst({
+        where: {
+            userId,
+            scopeId,
+            role: 'ADMIN',
+        },
+    });
+
+    if (!userRole) {
+        return { canAdd: false, reason: 'NOT_ADMIN' };
+    }
+
+    // Check 3: Team not already in a subscription
+    const existingSubscriptionScope = await prisma.subscriptionScope.findUnique({
+        where: { scopeId },
+    });
+
+    if (existingSubscriptionScope) {
+        return { canAdd: false, reason: 'TEAM_ALREADY_SUBSCRIBED' };
+    }
+
+    return { canAdd: true };
 }
 
 export async function getExpiringSubscriptions(daysAhead: number = 3) {

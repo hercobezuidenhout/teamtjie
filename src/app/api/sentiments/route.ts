@@ -134,7 +134,7 @@ export async function POST(request: NextRequest) {
 
     // Check subscription (Premium feature)
     try {
-      await requireSubscription(numericScopeId);
+      await requireSubscription(numericScopeId, session.user.id);
     } catch (error) {
       if (error instanceof SubscriptionRequiredError) {
         return NextResponse.json(

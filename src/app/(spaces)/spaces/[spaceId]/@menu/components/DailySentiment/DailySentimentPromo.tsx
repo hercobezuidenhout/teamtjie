@@ -23,7 +23,7 @@ export const DailySentimentPromo = ({ scopeId }: DailySentimentPromoProps) => {
   const router = useRouter();
 
   const handleUpgrade = () => {
-    router.push(`/settings/${scopeId}/billing`);
+    router.push(`/billing`);
   };
 
   return (

@@ -53,6 +53,11 @@ enum TransactionType {
   SUBSCRIPTION_CANCELLED
 }
 
+enum SubscriptionType {
+  TEAMTJIE_PLUS
+  ENTERPRISE
+}
+
 // Models
 
 model User {
@@ -73,6 +78,7 @@ model User {
   dailySentiments         DailySentiment[]
   createdHealthChecks     HealthCheck[]
   healthCheckResponses    HealthCheckResponse[]
+  subscription            Subscription?
 }
 
 model DeactivateUser {
@@ -103,7 +109,7 @@ model Scope {
   dailySentiments      DailySentiment[]
   settings             ScopeSettings?
   healthChecks         HealthCheck[]
-  subscription         Subscription?
+  subscriptionScopes   SubscriptionScope[]
 }
 
 model ScopeValue {
@@ -323,36 +329,75 @@ model HealthCheckAnswer {
 }
 
 model Subscription {
-  id                    Int                        @id @default(autoincrement())
-  scopeId               Int                        @unique
-  scope                 Scope                      @relation(fields: [scopeId], references: [id], onDelete: Cascade)
-  status                SubscriptionStatus         @default(PENDING)
-  amount                Decimal                    @db.Decimal(10, 2)
-  currency              String                     @default("ZAR")
-  billingCycle          String                     @default("monthly")
-  payfastToken          String?                    @unique
-  payfastSubscriptionId String?                    @unique
-  currentPeriodStart    DateTime?
-  currentPeriodEnd      DateTime?
-  cancelAtPeriodEnd     Boolean                    @default(false)
-  createdAt             DateTime                   @default(now())
-  updatedAt             DateTime                   @updatedAt
-  transactions          SubscriptionTransaction[]
+  id                     Int                        @id @default(autoincrement())
 
-  @@index([scopeId, status])
+  // User-level subscription
+  userId                 String                     @unique
+  user                   User                       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subscriptionType       SubscriptionType           @default(TEAMTJIE_PLUS)
+
+  // Generic external references (no provider names)
+  reference              String                     @unique
+  externalCustomerId     String?
+  externalSubscriptionId String?                    @unique
+  externalMetadata       Json?
+
+  // Subscription details
+  status                 SubscriptionStatus         @default(PENDING)
+  amount                 Decimal                    @db.Decimal(10, 2)
+  currency               String                     @default("ZAR")
+  billingCycle           String                     @default("monthly")
+
+  // Billing period
+  currentPeriodStart     DateTime?
+  currentPeriodEnd       DateTime?
+  cancelAtPeriodEnd      Boolean                    @default(false)
+
+  // Audit
+  subscribedBy           String
+  createdAt              DateTime                   @default(now())
+  updatedAt              DateTime                   @updatedAt
+
+  // Relations
+  teams                  SubscriptionScope[]
+  transactions           SubscriptionTransaction[]
+
+  @@index([userId, status])
   @@index([status, currentPeriodEnd])
+  @@index([reference])
+}
+
+model SubscriptionScope {
+  id             Int          @id @default(autoincrement())
+  subscriptionId Int
+  subscription   Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+  scopeId        Int          @unique
+  scope          Scope        @relation(fields: [scopeId], references: [id], onDelete: Cascade)
+  addedAt        DateTime     @default(now())
+  addedBy        String
+
+  @@index([subscriptionId])
+  @@index([scopeId])
 }
 
 model SubscriptionTransaction {
-  id               Int             @id @default(autoincrement())
-  subscriptionId   Int
-  subscription     Subscription    @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
-  type             TransactionType
-  amount           Decimal         @db.Decimal(10, 2)
-  currency         String
-  payfastPaymentId String?
-  metadata         Json?
-  createdAt        DateTime        @default(now())
+  id                Int                @id @default(autoincrement())
+  subscriptionId    Int
+  subscription      Subscription       @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+
+  // Generic external references
+  externalPaymentId String?
+  externalMetadata  Json?
+
+  // Transaction details
+  type              TransactionType
+  amount            Decimal            @db.Decimal(10, 2)
+  currency          String
+  processedAt       DateTime?
+
+  // Audit
+  createdAt         DateTime           @default(now())
 
   @@index([subscriptionId, createdAt(sort: Desc)])
+  @@index([externalPaymentId])
 }

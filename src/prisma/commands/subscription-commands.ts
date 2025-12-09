@@ -2,39 +2,46 @@ import { prisma } from '../prisma';
 import { SubscriptionStatus, TransactionType } from '@prisma/client';
 
 export interface CreateSubscriptionData {
-    scopeId: number;
+    userId: string;
+    reference: string;
     amount: number;
     currency: string;
     billingCycle: string;
-    payfastToken?: string;
+    subscriptionType?: string;
 }
 
 export async function createSubscription(data: CreateSubscriptionData) {
     return prisma.subscription.create({
         data: {
-            scopeId: data.scopeId,
+            userId: data.userId,
+            reference: data.reference,
             amount: data.amount,
             currency: data.currency,
             billingCycle: data.billingCycle,
-            payfastToken: data.payfastToken,
+            subscriptionType: data.subscriptionType as any || 'TEAMTJIE_PLUS',
+            subscribedBy: data.userId,
             status: SubscriptionStatus.PENDING,
         },
     });
 }
 
-export async function activateSubscription(
-    subscriptionId: number,
-    payfastSubscriptionId: string,
-    periodStart: Date,
-    periodEnd: Date
-) {
+export interface ActivateSubscriptionData {
+    subscriptionId: number;
+    externalCustomerId?: string;
+    externalSubscriptionId?: string;
+    periodStart: Date;
+    periodEnd: Date;
+}
+
+export async function activateSubscription(data: ActivateSubscriptionData) {
     return prisma.subscription.update({
-        where: { id: subscriptionId },
+        where: { id: data.subscriptionId },
         data: {
             status: SubscriptionStatus.ACTIVE,
-            payfastSubscriptionId,
-            currentPeriodStart: periodStart,
-            currentPeriodEnd: periodEnd,
+            externalCustomerId: data.externalCustomerId,
+            externalSubscriptionId: data.externalSubscriptionId,
+            currentPeriodStart: data.periodStart,
+            currentPeriodEnd: data.periodEnd,
         },
     });
 }
@@ -62,22 +69,26 @@ export async function cancelSubscription(
     });
 }
 
-export async function createSubscriptionTransaction(
-    subscriptionId: number,
-    type: TransactionType,
-    amount: number,
-    currency: string,
-    payfastPaymentId?: string,
-    metadata?: any
-) {
+export interface CreateTransactionData {
+    subscriptionId: number;
+    type: TransactionType;
+    amount: number;
+    currency: string;
+    externalPaymentId?: string;
+    externalMetadata?: any;
+    processedAt?: Date;
+}
+
+export async function createSubscriptionTransaction(data: CreateTransactionData) {
     return prisma.subscriptionTransaction.create({
         data: {
-            subscriptionId,
-            type,
-            amount,
-            currency,
-            payfastPaymentId,
-            metadata,
+            subscriptionId: data.subscriptionId,
+            type: data.type,
+            amount: data.amount,
+            currency: data.currency,
+            externalPaymentId: data.externalPaymentId,
+            externalMetadata: data.externalMetadata,
+            processedAt: data.processedAt,
         },
     });
 }
@@ -92,6 +103,35 @@ export async function updateSubscriptionPeriod(
         data: {
             currentPeriodStart: periodStart,
             currentPeriodEnd: periodEnd,
+        },
+    });
+}
+
+// ============================================================================
+// Team Management
+// ============================================================================
+
+export interface AddTeamToSubscriptionData {
+    subscriptionId: number;
+    scopeId: number;
+    addedBy: string;
+}
+
+export async function addTeamToSubscription(data: AddTeamToSubscriptionData) {
+    return prisma.subscriptionScope.create({
+        data: {
+            subscriptionId: data.subscriptionId,
+            scopeId: data.scopeId,
+            addedBy: data.addedBy,
+        },
+    });
+}
+
+export async function removeTeamFromSubscription(subscriptionId: number, scopeId: number) {
+    // Since scopeId is unique, we can delete by scopeId alone
+    return prisma.subscriptionScope.delete({
+        where: {
+            scopeId,
         },
     });
 }

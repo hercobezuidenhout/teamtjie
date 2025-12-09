@@ -37,7 +37,7 @@ export function PremiumFeatureGate({
         if (onUpgrade) {
             onUpgrade();
         } else {
-            router.push(`/settings/${scopeId}/billing`);
+            router.push(`/billing`);
         }
     };
 

@@ -8,15 +8,18 @@ CREATE TYPE "TransactionType" AS ENUM ('PAYMENT_COMPLETE', 'PAYMENT_FAILED', 'SU
 CREATE TABLE "Subscription" (
     "id" SERIAL NOT NULL,
     "scopeId" INTEGER NOT NULL,
+    "reference" TEXT NOT NULL,
+    "externalCustomerId" TEXT,
+    "externalSubscriptionId" TEXT,
+    "externalMetadata" JSONB,
     "status" "SubscriptionStatus" NOT NULL DEFAULT 'PENDING',
     "amount" DECIMAL(10,2) NOT NULL,
     "currency" TEXT NOT NULL DEFAULT 'ZAR',
     "billingCycle" TEXT NOT NULL DEFAULT 'monthly',
-    "payfastToken" TEXT,
-    "payfastSubscriptionId" TEXT,
     "currentPeriodStart" TIMESTAMP(3),
     "currentPeriodEnd" TIMESTAMP(3),
     "cancelAtPeriodEnd" BOOLEAN NOT NULL DEFAULT false,
+    "subscribedBy" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -27,11 +30,12 @@ CREATE TABLE "Subscription" (
 CREATE TABLE "SubscriptionTransaction" (
     "id" SERIAL NOT NULL,
     "subscriptionId" INTEGER NOT NULL,
+    "externalPaymentId" TEXT,
+    "externalMetadata" JSONB,
     "type" "TransactionType" NOT NULL,
     "amount" DECIMAL(10,2) NOT NULL,
     "currency" TEXT NOT NULL,
-    "payfastPaymentId" TEXT,
-    "metadata" JSONB,
+    "processedAt" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "SubscriptionTransaction_pkey" PRIMARY KEY ("id")
@@ -41,10 +45,10 @@ CREATE TABLE "SubscriptionTransaction" (
 CREATE UNIQUE INDEX "Subscription_scopeId_key" ON "Subscription"("scopeId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Subscription_payfastToken_key" ON "Subscription"("payfastToken");
+CREATE UNIQUE INDEX "Subscription_reference_key" ON "Subscription"("reference");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Subscription_payfastSubscriptionId_key" ON "Subscription"("payfastSubscriptionId");
+CREATE UNIQUE INDEX "Subscription_externalSubscriptionId_key" ON "Subscription"("externalSubscriptionId");
 
 -- CreateIndex
 CREATE INDEX "Subscription_scopeId_status_idx" ON "Subscription"("scopeId", "status");
@@ -53,7 +57,13 @@ CREATE INDEX "Subscription_scopeId_status_idx" ON "Subscription"("scopeId", "sta
 CREATE INDEX "Subscription_status_currentPeriodEnd_idx" ON "Subscription"("status", "currentPeriodEnd");
 
 -- CreateIndex
+CREATE INDEX "Subscription_reference_idx" ON "Subscription"("reference");
+
+-- CreateIndex
 CREATE INDEX "SubscriptionTransaction_subscriptionId_createdAt_idx" ON "SubscriptionTransaction"("subscriptionId", "createdAt" DESC);
+
+-- CreateIndex
+CREATE INDEX "SubscriptionTransaction_externalPaymentId_idx" ON "SubscriptionTransaction"("externalPaymentId");
 
 -- AddForeignKey
 ALTER TABLE "Subscription" ADD CONSTRAINT "Subscription_scopeId_fkey" FOREIGN KEY ("scopeId") REFERENCES "Scope"("id") ON DELETE CASCADE ON UPDATE CASCADE;

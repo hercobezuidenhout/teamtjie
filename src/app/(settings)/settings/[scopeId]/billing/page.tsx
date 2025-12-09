@@ -13,8 +13,12 @@ import {
     AlertDescription
 } from '@chakra-ui/react';
 import { UpgradeCard } from './components/UpgradeCard';
+import { TeamBillingStatus } from './components/TeamBillingStatus';
 import { useCurrentUserQuery } from '@/services/user/queries/use-current-user-query';
 import { useScopeQuery } from '@/services/scope/queries/use-scope-query';
+import { useSubscriptionQuery } from '@/services/subscription/queries/use-subscription-query';
+import { useUserSubscriptionQuery } from '@/services/subscription/queries/use-user-subscription-query';
+import { useScopes } from '@/contexts/ScopeProvider';
 
 interface BillingPageProps {
     params: { scopeId: string; };
@@ -26,9 +30,12 @@ export default function BillingPage({ params }: BillingPageProps) {
 
     const { data: user, isLoading: userLoading, error: userError } = useCurrentUserQuery();
     const { data: scope, isLoading: scopeLoading, error: scopeError } = useScopeQuery(numericScopeId);
+    const { data: teamSubscriptionData, isLoading: teamSubscriptionLoading } = useSubscriptionQuery(numericScopeId);
+    const { data: userSubscriptionData, isLoading: userSubscriptionLoading } = useUserSubscriptionQuery();
+    const { scopes } = useScopes();
 
     // Loading state
-    if (userLoading || scopeLoading) {
+    if (userLoading || scopeLoading || teamSubscriptionLoading || userSubscriptionLoading) {
         return (
             <Container maxW="container.lg" py={8}>
                 <VStack spacing={4}>
@@ -73,13 +80,26 @@ export default function BillingPage({ params }: BillingPageProps) {
                     </Text>
                 </Box>
 
-                {/* Upgrade Card */}
-                <UpgradeCard
+                {/* Team Subscription Status */}
+                <TeamBillingStatus
                     scopeId={numericScopeId}
                     scopeName={scope.name}
-                    userEmail={user.email || ''}
-                    userName={user.name}
+                    hasSubscription={teamSubscriptionData?.hasSubscription || false}
+                    subscribedBy={teamSubscriptionData?.subscription?.subscribedBy}
+                    userHasSubscription={userSubscriptionData?.hasSubscription || false}
+                    userSubscriptionTeamCount={userSubscriptionData?.subscription?.teamCount || 0}
                 />
+
+                {/* Show upgrade card if user doesn't have subscription */}
+                {!userSubscriptionData?.hasSubscription && (
+                    <UpgradeCard
+                        scopeId={numericScopeId}
+                        scopeName={scope.name}
+                        userEmail={user.email || ''}
+                        userName={user.name}
+                        userScopes={scopes}
+                    />
+                )}
             </VStack>
         </Container>
     );

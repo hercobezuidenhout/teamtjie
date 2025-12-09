@@ -8,22 +8,22 @@ export class SubscriptionRequiredError extends Error {
 }
 
 /**
- * Check if a scope has an active subscription
+ * Check if a user has an active subscription that includes this scope
  * Throws SubscriptionRequiredError if no active subscription found
  */
-export async function requireSubscription(scopeId: number): Promise<void> {
-    const hasSubscription = await hasActiveSubscription(scopeId);
+export async function requireSubscription(scopeId: number, userId: string): Promise<void> {
+    const hasSubscription = await hasActiveSubscription(scopeId, userId);
 
     if (!hasSubscription) {
         throw new SubscriptionRequiredError(
-            'This feature requires an active Premium subscription. Upgrade to access Daily Sentiments and Health Checks.'
+            'This feature requires an active Teamtjie+ subscription with this team added. Visit your billing settings to manage teams.'
         );
     }
 }
 
 /**
- * Check if a scope has an active subscription (returns boolean)
+ * Check if a user has an active subscription that includes this scope (returns boolean)
  */
-export async function checkSubscription(scopeId: number): Promise<boolean> {
-    return hasActiveSubscription(scopeId);
+export async function checkSubscription(scopeId: number, userId: string): Promise<boolean> {
+    return hasActiveSubscription(scopeId, userId);
 }

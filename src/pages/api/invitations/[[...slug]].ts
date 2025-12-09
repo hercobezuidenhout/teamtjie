@@ -24,6 +24,7 @@ import { CreateInviteDto } from '@/models/dtos/invites/create-invite-dto';
 import { subject } from '@casl/ability';
 import { getValidInvitation } from '@/prisma/queries/get-valid-invitation';
 import { RoleType } from '@prisma/client';
+import prisma from '@/prisma/prisma';
 import { getScope } from '@/prisma';
 import { defaultExceptionHandler } from '@/utils/default-exception-handler';
 import { Authorize } from '@/backend/middleware/authorize/authorize';
@@ -102,6 +103,22 @@ class InvitationsHandler {
         }
 
         const scope = await getScope(invitation.scopeId);
+
+        // Check admin role limit if invitation is for ADMIN role
+        if (invitation.defaultRole === RoleType.ADMIN) {
+            const userAdminCount = await prisma.scopeRole.count({
+                where: {
+                    userId: req.userId,
+                    role: RoleType.ADMIN,
+                },
+            });
+
+            if (userAdminCount >= 3) {
+                throw new BadRequestException(
+                    'You have reached the maximum of 3 admin roles. Cannot accept this invitation.'
+                );
+            }
+        }
 
         await createRole({ userId: req.userId, scopeId: invitation.scopeId, role: invitation.defaultRole });
 

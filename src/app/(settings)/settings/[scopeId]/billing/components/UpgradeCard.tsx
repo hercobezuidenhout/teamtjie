@@ -13,22 +13,114 @@ import {
     ListItem,
     ListIcon,
     Badge,
-    Divider
+    Divider,
+    useToast,
+    Alert,
+    AlertIcon
 } from '@chakra-ui/react';
 import { FiCheck, FiTrendingUp, FiActivity, FiCreditCard } from 'react-icons/fi';
+import { useState } from 'react';
+import PaystackPop from '@paystack/inline-js';
+import { BILLING_CONFIG, isBillingConfigured, generateSubscriptionRef } from '@/config/billing';
 
 interface UpgradeCardProps {
     scopeId: number;
-    onUpgrade?: () => void;
+    scopeName: string;
+    userEmail: string;
+    userName: string;
 }
 
-export function UpgradeCard({ scopeId, onUpgrade }: UpgradeCardProps) {
+export function UpgradeCard({ scopeId, scopeName, userEmail, userName }: UpgradeCardProps) {
+    const [isLoading, setIsLoading] = useState(false);
+    const toast = useToast();
+
+    // Validate environment configuration
+    if (!isBillingConfigured()) {
+        return (
+            <Alert status="error">
+                <AlertIcon />
+                <VStack align="start" spacing={1}>
+                    <Text fontWeight="bold">Configuration Error</Text>
+                    <Text fontSize="sm">
+                        Paystack public key is not configured. Please add NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY to your environment variables.
+                    </Text>
+                </VStack>
+            </Alert>
+        );
+    }
+
     const handleUpgrade = () => {
-        if (onUpgrade) {
-            onUpgrade();
-        } else {
-            // Phase 4 will implement actual payment flow
-            console.log('Upgrade clicked for scope:', scopeId);
+        if (!userEmail) {
+            toast({
+                title: 'Email Required',
+                description: 'Please add an email address to your profile before upgrading.',
+                status: 'warning',
+                duration: 5000,
+                isClosable: true,
+            });
+            return;
+        }
+
+        setIsLoading(true);
+
+        try {
+            const paystack = new PaystackPop();
+            paystack.newTransaction({
+                key: BILLING_CONFIG.paystack.publicKey,
+                email: userEmail,
+                amount: BILLING_CONFIG.price.amountInKobo,
+                currency: BILLING_CONFIG.price.currency,
+                ref: generateSubscriptionRef(scopeId),
+                metadata: {
+                    scopeId,
+                    scopeName,
+                    userName,
+                    custom_fields: [
+                        {
+                            display_name: 'Team',
+                            variable_name: 'team',
+                            value: scopeName
+                        }
+                    ]
+                },
+                onSuccess: (transaction) => {
+                    console.log('Payment successful:', transaction);
+                    toast({
+                        title: 'Payment Successful!',
+                        description: 'Your premium subscription is now active.',
+                        status: 'success',
+                        duration: 5000,
+                        isClosable: true,
+                    });
+                    setIsLoading(false);
+
+                    // Reload page to reflect subscription status
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1500);
+                },
+                onCancel: () => {
+                    console.log('Payment cancelled by user');
+                    toast({
+                        title: 'Payment Cancelled',
+                        description: 'You can upgrade anytime.',
+                        status: 'info',
+                        duration: 3000,
+                        isClosable: true,
+                    });
+                    setIsLoading(false);
+                },
+            });
+        } catch (error) {
+            console.error('Error initializing Paystack:', error);
+            toast({
+                title: 'Error',
+                description: 'Failed to initialize payment. Please try again.',
+                status: 'error',
+                duration: 5000,
+                isClosable: true,
+            });
+            setIsLoading(false);
         }
     };
 
@@ -57,7 +149,7 @@ export function UpgradeCard({ scopeId, onUpgrade }: UpgradeCardProps) {
                                 Only
                             </Text>
                             <Text fontSize="4xl" fontWeight="bold" color="chakra-primary-color">
-                                R99
+                                R{BILLING_CONFIG.price.monthly}
                             </Text>
                             <Text color="chakra-subtle-text">/month</Text>
                         </HStack>
@@ -112,7 +204,7 @@ export function UpgradeCard({ scopeId, onUpgrade }: UpgradeCardProps) {
                                             <Text fontWeight="medium">Secure Billing</Text>
                                         </HStack>
                                         <Text fontSize="sm" color="chakra-subtle-text">
-                                            Managed through PayFast - South Africa&apos;s trusted payment gateway
+                                            Powered by Paystack
                                         </Text>
                                     </VStack>
                                 </HStack>
@@ -130,11 +222,13 @@ export function UpgradeCard({ scopeId, onUpgrade }: UpgradeCardProps) {
                             w="full"
                             onClick={handleUpgrade}
                             leftIcon={<FiCreditCard />}
+                            isLoading={isLoading}
+                            loadingText="Processing..."
                         >
                             Upgrade to Premium
                         </Button>
                         <Text fontSize="xs" color="chakra-subtle-text" textAlign="center">
-                            You&apos;ll be redirected to PayFast to complete your payment securely
+                            Secure payment powered by Paystack
                         </Text>
                     </VStack>
                 </VStack>

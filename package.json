@@ -25,6 +25,7 @@
     "@mdx-js/loader": "^3.0.0",
     "@mdx-js/react": "^3.0.0",
     "@next/mdx": "^14.0.4",
+    "@paystack/inline-js": "^2.22.7",
     "@prisma/client": "5.18.0",
     "@sendgrid/client": "^8.1.0",
     "@sendgrid/mail": "^8.1.0",

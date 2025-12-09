@@ -1,17 +1,35 @@
-import { Box, Button, Heading, Text, VStack, Icon, HStack, Badge } from '@chakra-ui/react';
-import { FiLock, FiTrendingUp, FiActivity } from 'react-icons/fi';
+import {
+    Card,
+    CardHeader,
+    CardBody,
+    Button,
+    Heading,
+    Text,
+    VStack,
+    HStack,
+    List,
+    ListItem,
+    ListIcon,
+    Badge,
+    Divider,
+    Icon,
+} from '@chakra-ui/react';
+import { FiCheck, FiTrendingUp, FiActivity, FiCreditCard } from 'react-icons/fi';
 import { useRouter } from 'next/navigation';
+import { BILLING_CONFIG } from '@/config/billing';
 
 interface PremiumFeatureGateProps {
     scopeId: number;
     featureName?: string;
     onUpgrade?: () => void;
+    variant?: 'card' | 'inline';
 }
 
 export function PremiumFeatureGate({
     scopeId,
     featureName = 'this feature',
-    onUpgrade
+    onUpgrade,
+    variant = 'card'
 }: PremiumFeatureGateProps) {
     const router = useRouter();
 
@@ -19,77 +37,232 @@ export function PremiumFeatureGate({
         if (onUpgrade) {
             onUpgrade();
         } else {
-            // Navigate to billing page (will be implemented in Phase 3)
             router.push(`/settings/${scopeId}/billing`);
         }
     };
 
-    return (
-        <Box
-            p={8}
-            borderWidth="2px"
-            borderRadius="lg"
-            borderColor="purple.200"
-            bg="purple.50"
-            textAlign="center"
-            maxW="600px"
-            mx="auto"
-            my={8}
-        >
-            <VStack spacing={4}>
-                <Icon as={FiLock} boxSize={12} color="purple.500" />
-
-                <Badge colorScheme="purple" fontSize="sm" px={3} py={1}>
+    const content = (
+        <VStack align="stretch" spacing={6}>
+            {/* Header */}
+            <VStack spacing={3}>
+                <Badge colorScheme="blue" fontSize="sm" px={3} py={1}>
                     PREMIUM FEATURE
                 </Badge>
-
-                <Heading size="lg" color="purple.900">
+                <Heading size="lg">
                     Upgrade to Premium
                 </Heading>
-
-                <Text color="gray.700" fontSize="lg">
+                <Text color="chakra-subtle-text" textAlign="center">
                     {featureName} requires a Premium subscription
                 </Text>
+            </VStack>
 
-                <Box bg="white" p={6} borderRadius="md" w="full" boxShadow="sm">
-                    <VStack spacing={4} align="stretch">
-                        <HStack>
-                            <Icon as={FiTrendingUp} color="purple.500" />
-                            <Text fontWeight="medium">Daily Sentiments</Text>
-                        </HStack>
-                        <HStack>
-                            <Icon as={FiActivity} color="purple.500" />
-                            <Text fontWeight="medium">Health Checks</Text>
-                        </HStack>
-                    </VStack>
-                </Box>
-
-                <VStack spacing={2} pt={2}>
-                    <HStack spacing={1} align="baseline">
-                        <Text fontSize="3xl" fontWeight="bold" color="purple.600">
-                            R99
-                        </Text>
-                        <Text color="gray.600">/month</Text>
-                    </HStack>
-                    <Text fontSize="sm" color="gray.500">
-                        Cancel anytime
+            {/* Pricing */}
+            <VStack spacing={2}>
+                <HStack spacing={1} align="baseline">
+                    <Text fontSize="sm" color="chakra-subtle-text">
+                        Only
                     </Text>
-                </VStack>
+                    <Text fontSize="4xl" fontWeight="bold" color="chakra-primary-color">
+                        R{BILLING_CONFIG.price.monthly}
+                    </Text>
+                    <Text color="chakra-subtle-text">/month</Text>
+                </HStack>
+                <Text fontSize="sm" color="chakra-subtle-text">
+                    Billed monthly • Cancel anytime
+                </Text>
+            </VStack>
 
+            <Divider />
+
+            {/* Features */}
+            <VStack align="stretch" spacing={4}>
+                <Heading size="sm">What&apos;s included:</Heading>
+
+                <List spacing={4}>
+                    <ListItem>
+                        <HStack align="start" spacing={3}>
+                            <ListIcon as={FiCheck} color="green.500" mt={1} boxSize={5} />
+                            <VStack align="start" spacing={1}>
+                                <HStack spacing={2}>
+                                    <Icon as={FiTrendingUp} />
+                                    <Text fontWeight="medium">Daily Sentiments</Text>
+                                </HStack>
+                                <Text fontSize="sm" color="chakra-subtle-text">
+                                    Track team mood and engagement daily
+                                </Text>
+                            </VStack>
+                        </HStack>
+                    </ListItem>
+
+                    <ListItem>
+                        <HStack align="start" spacing={3}>
+                            <ListIcon as={FiCheck} color="green.500" mt={1} boxSize={5} />
+                            <VStack align="start" spacing={1}>
+                                <HStack spacing={2}>
+                                    <Icon as={FiActivity} />
+                                    <Text fontWeight="medium">Health Checks</Text>
+                                </HStack>
+                                <Text fontSize="sm" color="chakra-subtle-text">
+                                    Regular team health assessments and insights
+                                </Text>
+                            </VStack>
+                        </HStack>
+                    </ListItem>
+
+                    <ListItem>
+                        <HStack align="start" spacing={3}>
+                            <ListIcon as={FiCheck} color="green.500" mt={1} boxSize={5} />
+                            <VStack align="start" spacing={1}>
+                                <HStack spacing={2}>
+                                    <Icon as={FiCreditCard} />
+                                    <Text fontWeight="medium">Secure Billing</Text>
+                                </HStack>
+                                <Text fontSize="sm" color="chakra-subtle-text">
+                                    Powered by Paystack
+                                </Text>
+                            </VStack>
+                        </HStack>
+                    </ListItem>
+                </List>
+            </VStack>
+
+            <Divider />
+
+            {/* CTA */}
+            <VStack spacing={3}>
                 <Button
-                    colorScheme="purple"
+                    colorScheme="blue"
                     size="lg"
-                    onClick={handleUpgrade}
                     w="full"
-                    maxW="300px"
+                    onClick={handleUpgrade}
+                    leftIcon={<Icon as={FiCreditCard} />}
                 >
                     Upgrade to Premium
                 </Button>
-
-                <Text fontSize="xs" color="gray.500" pt={2}>
-                    Billing managed through PayFast
+                <Text fontSize="xs" color="chakra-subtle-text" textAlign="center">
+                    Secure payment powered by Paystack
                 </Text>
             </VStack>
-        </Box>
+        </VStack>
+    );
+
+    // Inline variant for modals - no card wrapper
+    if (variant === 'inline') {
+        return (
+            <VStack maxW="600px" mx="auto" py={6} px={4}>
+                {content}
+            </VStack>
+        );
+    }
+
+    // Card variant for full pages
+    return (
+        <Card maxW="600px" mx="auto" my={8}>
+            <CardHeader>
+                <VStack spacing={3}>
+                    <Badge colorScheme="blue" fontSize="sm" px={3} py={1}>
+                        PREMIUM FEATURE
+                    </Badge>
+                    <Heading size="lg">
+                        Upgrade to Premium
+                    </Heading>
+                    <Text color="chakra-subtle-text" textAlign="center">
+                        {featureName} requires a Premium subscription
+                    </Text>
+                </VStack>
+            </CardHeader>
+
+            <CardBody>
+                <VStack align="stretch" spacing={6}>
+                    {/* Pricing */}
+                    <VStack spacing={2}>
+                        <HStack spacing={1} align="baseline">
+                            <Text fontSize="sm" color="chakra-subtle-text">
+                                Only
+                            </Text>
+                            <Text fontSize="4xl" fontWeight="bold" color="chakra-primary-color">
+                                R{BILLING_CONFIG.price.monthly}
+                            </Text>
+                            <Text color="chakra-subtle-text">/month</Text>
+                        </HStack>
+                        <Text fontSize="sm" color="chakra-subtle-text">
+                            Billed monthly • Cancel anytime
+                        </Text>
+                    </VStack>
+
+                    <Divider />
+
+                    {/* Features */}
+                    <VStack align="stretch" spacing={4}>
+                        <Heading size="sm">What&apos;s included:</Heading>
+
+                        <List spacing={4}>
+                            <ListItem>
+                                <HStack align="start" spacing={3}>
+                                    <ListIcon as={FiCheck} color="green.500" mt={1} boxSize={5} />
+                                    <VStack align="start" spacing={1}>
+                                        <HStack spacing={2}>
+                                            <Icon as={FiTrendingUp} />
+                                            <Text fontWeight="medium">Daily Sentiments</Text>
+                                        </HStack>
+                                        <Text fontSize="sm" color="chakra-subtle-text">
+                                            Track team mood and engagement daily
+                                        </Text>
+                                    </VStack>
+                                </HStack>
+                            </ListItem>
+
+                            <ListItem>
+                                <HStack align="start" spacing={3}>
+                                    <ListIcon as={FiCheck} color="green.500" mt={1} boxSize={5} />
+                                    <VStack align="start" spacing={1}>
+                                        <HStack spacing={2}>
+                                            <Icon as={FiActivity} />
+                                            <Text fontWeight="medium">Health Checks</Text>
+                                        </HStack>
+                                        <Text fontSize="sm" color="chakra-subtle-text">
+                                            Regular team health assessments and insights
+                                        </Text>
+                                    </VStack>
+                                </HStack>
+                            </ListItem>
+
+                            <ListItem>
+                                <HStack align="start" spacing={3}>
+                                    <ListIcon as={FiCheck} color="green.500" mt={1} boxSize={5} />
+                                    <VStack align="start" spacing={1}>
+                                        <HStack spacing={2}>
+                                            <Icon as={FiCreditCard} />
+                                            <Text fontWeight="medium">Secure Billing</Text>
+                                        </HStack>
+                                        <Text fontSize="sm" color="chakra-subtle-text">
+                                            Powered by Paystack
+                                        </Text>
+                                    </VStack>
+                                </HStack>
+                            </ListItem>
+                        </List>
+                    </VStack>
+
+                    <Divider />
+
+                    {/* CTA */}
+                    <VStack spacing={3}>
+                        <Button
+                            colorScheme="blue"
+                            size="lg"
+                            w="full"
+                            onClick={handleUpgrade}
+                            leftIcon={<Icon as={FiCreditCard} />}
+                        >
+                            Upgrade to Premium
+                        </Button>
+                        <Text fontSize="xs" color="chakra-subtle-text" textAlign="center">
+                            Secure payment powered by Paystack
+                        </Text>
+                    </VStack>
+                </VStack>
+            </CardBody>
+        </Card>
     );
 }

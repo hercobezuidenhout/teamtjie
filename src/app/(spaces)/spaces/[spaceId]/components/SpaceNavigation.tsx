@@ -1,23 +1,36 @@
 'use client';
 
-import { VStack, Button, Icon, useDisclosure } from '@chakra-ui/react';
+import { VStack, Button, Icon, useDisclosure, Modal, ModalOverlay, ModalContent, ModalBody, ModalCloseButton } from '@chakra-ui/react';
 import { useParams, usePathname, useRouter } from 'next/navigation';
 import { ICONS } from '@/lib/icons/icons';
 import { useScopes } from '@/contexts/ScopeProvider';
 import { ScopeMembers } from '../@menu/components/ScopeMembersMenu/ScopeMembers';
-import { useMemo } from 'react';
+import { PremiumFeatureGate } from '@/lib/components/PremiumFeatureGate/PremiumFeatureGate';
+import { useSubscriptionQuery } from '@/services/subscription/queries/use-subscription-query';
+import { useMemo, useCallback } from 'react';
 
 export const SpaceNavigation = () => {
   const params = useParams();
   const pathname = usePathname();
   const router = useRouter();
   const { isOpen, onClose, onOpen } = useDisclosure();
+  const { isOpen: isPremiumModalOpen, onClose: onPremiumModalClose, onOpen: onPremiumModalOpen } = useDisclosure();
   const { current } = useScopes();
   const spaceId = params['spaceId'] as string;
+  const scopeId = parseInt(spaceId, 10);
 
   const currentScope = current.space;
+  const { data: subscriptionData } = useSubscriptionQuery(scopeId);
 
   const isActive = (path: string) => pathname === path;
+
+  const handleHealthChecksClick = useCallback(() => {
+    if (!subscriptionData?.hasSubscription) {
+      onPremiumModalOpen();
+    } else {
+      router.push(`/spaces/${spaceId}/health-checks`);
+    }
+  }, [subscriptionData, onPremiumModalOpen, router, spaceId]);
 
   const navItems = useMemo(() => [
     {
@@ -36,7 +49,7 @@ export const SpaceNavigation = () => {
       label: 'Health Checks',
       icon: ICONS.ActivityIcon,
       path: `/spaces/${spaceId}/health-checks`,
-      onClick: () => router.push(`/spaces/${spaceId}/health-checks`)
+      onClick: handleHealthChecksClick
     },
     {
       label: 'Members',
@@ -50,7 +63,7 @@ export const SpaceNavigation = () => {
       path: `/settings/${spaceId}`,
       onClick: () => router.push(`/settings/${spaceId}`)
     }
-  ], [spaceId, router, onOpen]);
+  ], [spaceId, router, onOpen, handleHealthChecksClick]);
 
   if (!currentScope || currentScope.id === 0) {
     return null;
@@ -76,6 +89,17 @@ export const SpaceNavigation = () => {
         ))}
       </VStack>
       <ScopeMembers scope={currentScope} isOpen={isOpen} onClose={onClose} />
+
+      {/* Premium Feature Modal */}
+      <Modal isOpen={isPremiumModalOpen} onClose={onPremiumModalClose} size="xl" isCentered>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalCloseButton />
+          <ModalBody p={0}>
+            <PremiumFeatureGate scopeId={scopeId} featureName="Health Checks" variant="inline" />
+          </ModalBody>
+        </ModalContent>
+      </Modal>
     </>
   );
 };

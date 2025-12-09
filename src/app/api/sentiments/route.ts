@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSession } from '@/app/utils';
 import prisma from '@/prisma/prisma';
+import { requireSubscription, SubscriptionRequiredError } from '@/utils/require-subscription';
 
 export const dynamic = 'force-dynamic';
 
@@ -42,6 +43,19 @@ export async function GET(request: NextRequest) {
 
     if (!userRole) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    // Check subscription (Premium feature)
+    try {
+      await requireSubscription(numericScopeId);
+    } catch (error) {
+      if (error instanceof SubscriptionRequiredError) {
+        return NextResponse.json(
+          { error: error.message, requiresSubscription: true },
+          { status: 402 }
+        );
+      }
+      throw error;
     }
 
     // Parse date or default to today
@@ -116,6 +130,19 @@ export async function POST(request: NextRequest) {
 
     if (!userRole) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    // Check subscription (Premium feature)
+    try {
+      await requireSubscription(numericScopeId);
+    } catch (error) {
+      if (error instanceof SubscriptionRequiredError) {
+        return NextResponse.json(
+          { error: error.message, requiresSubscription: true },
+          { status: 402 }
+        );
+      }
+      throw error;
     }
 
     // Get today's date (date only, no time)

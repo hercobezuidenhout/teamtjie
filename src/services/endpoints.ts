@@ -22,5 +22,10 @@ export const ENDPOINTS = {
   },
   insights: {
     base: '/api/insights'
+  },
+  billing: {
+    base: '/api/v1/billing',
+    subscriptions: '/api/v1/billing/subscriptions',
+    webhook: '/api/v1/billing/webhook',
   }
 };

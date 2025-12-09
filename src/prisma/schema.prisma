@@ -39,6 +39,20 @@ enum NotificationType {
   IN_APP
 }
 
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELLED
+  EXPIRED
+  PENDING
+  FAILED
+}
+
+enum TransactionType {
+  PAYMENT_COMPLETE
+  PAYMENT_FAILED
+  SUBSCRIPTION_CANCELLED
+}
+
 // Models
 
 model User {
@@ -89,6 +103,7 @@ model Scope {
   dailySentiments      DailySentiment[]
   settings             ScopeSettings?
   healthChecks         HealthCheck[]
+  subscription         Subscription?
 }
 
 model ScopeValue {
@@ -305,4 +320,39 @@ model HealthCheckAnswer {
 
   @@unique([responseId, questionId])
   @@index([questionId])
+}
+
+model Subscription {
+  id                    Int                        @id @default(autoincrement())
+  scopeId               Int                        @unique
+  scope                 Scope                      @relation(fields: [scopeId], references: [id], onDelete: Cascade)
+  status                SubscriptionStatus         @default(PENDING)
+  amount                Decimal                    @db.Decimal(10, 2)
+  currency              String                     @default("ZAR")
+  billingCycle          String                     @default("monthly")
+  payfastToken          String?                    @unique
+  payfastSubscriptionId String?                    @unique
+  currentPeriodStart    DateTime?
+  currentPeriodEnd      DateTime?
+  cancelAtPeriodEnd     Boolean                    @default(false)
+  createdAt             DateTime                   @default(now())
+  updatedAt             DateTime                   @updatedAt
+  transactions          SubscriptionTransaction[]
+
+  @@index([scopeId, status])
+  @@index([status, currentPeriodEnd])
+}
+
+model SubscriptionTransaction {
+  id               Int             @id @default(autoincrement())
+  subscriptionId   Int
+  subscription     Subscription    @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+  type             TransactionType
+  amount           Decimal         @db.Decimal(10, 2)
+  currency         String
+  payfastPaymentId String?
+  metadata         Json?
+  createdAt        DateTime        @default(now())
+
+  @@index([subscriptionId, createdAt(sort: Desc)])
 }

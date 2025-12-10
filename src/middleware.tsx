@@ -69,6 +69,7 @@ export async function middleware(request: NextRequest) {
 
   const isRoot = pathname === '/';
 
+  // If user has session and visits root, redirect to their space
   if (hasSession && isRoot) {
     // Check for last visited space in cookie
     const lastSpaceId = request.cookies.get('last-space-id')?.value;
@@ -117,9 +118,8 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  if (!hasSession && isRoot) {
-    return NextResponse.redirect(new URL('/login', request.url));
-  }
+  // Allow unauthenticated users to view the marketing page at root
+  // No redirect needed - they can see the landing page
 
   return response;
 }

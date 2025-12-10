@@ -269,57 +269,98 @@ export async function subscribeCustomerToPlan(
 }
 
 /**
- * Cancel a Paystack subscription
- * Uses the simpler disable endpoint that doesn't require email token
+ * Generate a Paystack subscription management link
+ * This creates a unique link where the customer can manage (including cancel) their subscription
+ * This is the recommended way to handle subscription cancellation programmatically
  */
-export async function cancelPaystackSubscription(
+export async function generateSubscriptionManagementLink(
   subscriptionCode: string
-): Promise<{ success: boolean; message?: string; paystackResponse?: any }> {
+): Promise<{ success: boolean; message?: string; link?: string; paystackResponse?: any }> {
   try {
-    // Use the simpler endpoint that uses API key authentication
     const response = await fetch(
-      `https://api.paystack.co/subscription/disable`,
+      `https://api.paystack.co/subscription/${subscriptionCode}/manage/link`,
       {
-        method: 'POST',
+        method: 'GET',
         headers: {
           Authorization: `Bearer ${BILLING_CONFIG.paystack.secretKey}`,
-          'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          code: subscriptionCode,
-          token: subscriptionCode, // Use subscription code as token
-        }),
       }
     );
 
-    const data = await response.json();
+    // Check if response has content before parsing JSON
+    const contentType = response.headers.get('content-type');
+    let data: any = null;
 
-    console.log('Paystack cancel response:', {
+    if (contentType && contentType.includes('application/json')) {
+      const text = await response.text();
+      if (text && text.trim().length > 0) {
+        try {
+          data = JSON.parse(text);
+        } catch (parseError) {
+          console.error('Failed to parse Paystack response:', text);
+          return {
+            success: false,
+            message: 'Invalid response from Paystack',
+          };
+        }
+      }
+    }
+
+    console.log('Paystack management link response:', {
       status: response.status,
       ok: response.ok,
+      hasData: !!data,
       data,
     });
 
-    if (!response.ok || !data.status) {
+    // If no data or response not ok
+    if (!response.ok || !data) {
       return {
         success: false,
-        message: data.message || 'Failed to cancel subscription',
+        message: data?.message || `Paystack API error: ${response.status} ${response.statusText}`,
+        paystackResponse: data,
+      };
+    }
+
+    // Check if Paystack returned success
+    if (!data.status) {
+      return {
+        success: false,
+        message: data.message || 'Failed to generate management link',
         paystackResponse: data,
       };
     }
 
     return {
       success: true,
-      message: data.message,
+      message: data.message || 'Management link generated',
+      link: data.data?.link,
       paystackResponse: data,
     };
   } catch (error) {
-    console.error('Paystack cancel error:', error);
+    console.error('Paystack management link error:', error);
     return {
       success: false,
       message: error instanceof Error ? error.message : 'Unknown error',
     };
   }
+}
+
+/**
+ * Cancel a Paystack subscription (legacy method - use management link instead)
+ * @deprecated Use generateSubscriptionManagementLink() instead
+ */
+export async function cancelPaystackSubscription(
+  subscriptionCode: string
+): Promise<{ success: boolean; message?: string; paystackResponse?: any }> {
+  // This method requires email token which we don't have
+  // Redirect to management link method instead
+  const result = await generateSubscriptionManagementLink(subscriptionCode);
+  return {
+    success: result.success,
+    message: result.message,
+    paystackResponse: result.paystackResponse,
+  };
 }
 
 // ============================================================================

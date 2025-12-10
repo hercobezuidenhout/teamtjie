@@ -41,7 +41,9 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const immediate = body.immediate === true;
 
-    // Cancel with Paystack if we have a subscription code
+    // Handle Paystack cancellation
+    let managementLink: string | undefined;
+
     if (subscription.externalSubscriptionId) {
       try {
         const result = await cancelPaystackSubscription(
@@ -50,12 +52,20 @@ export async function POST(request: NextRequest) {
 
         if (!result.success) {
           console.error('Paystack cancellation failed:', result.message, result.paystackResponse);
-          // Continue anyway - we can still cancel in our system
+
+          // If subscription doesn't exist in Paystack, that's okay - continue with local cancellation
+          // This happens when subscription was created in our DB but not in Paystack
+          if (result.paystackResponse?.code === 'not_found') {
+            console.log('Subscription not found in Paystack - proceeding with local cancellation only');
+          }
         } else {
-          console.log('Paystack subscription cancelled successfully:', {
+          console.log('Paystack management link generated:', {
             subscriptionCode: subscription.externalSubscriptionId,
-            paystackResponse: result.paystackResponse,
+            hasLink: !!result.paystackResponse?.data?.link,
           });
+
+          // Extract management link if available
+          managementLink = result.paystackResponse?.data?.link;
         }
       } catch (error) {
         console.error('Error calling Paystack cancel:', error);
@@ -75,6 +85,7 @@ export async function POST(request: NextRequest) {
         ? 'Subscription cancelled immediately'
         : 'Subscription will cancel at period end',
       activeUntil: immediate ? null : subscription.currentPeriodEnd,
+      managementLink, // Include management link if available
     });
   } catch (error) {
     console.error('Cancel subscription error:', error);

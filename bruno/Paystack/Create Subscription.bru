@@ -1,0 +1,67 @@
+meta {
+  name: Create Subscription
+  type: http
+  seq: 3
+}
+
+post {
+  url: https://api.paystack.co/subscription
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{PAYSTACK_SECRET_KEY}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "customer": "{{CUSTOMER_CODE}}",
+    "plan": "{{PLAN_CODE}}"
+  }
+}
+
+docs {
+  # Create a Subscription
+
+  Subscribes a customer to a plan for recurring billing.
+
+  ## Request Body
+  - `customer`: Customer code (e.g., CUS_xxxxx) from payment response
+  - `plan`: Plan code (e.g., PLN_xxxxx) from Paystack dashboard
+
+  ## Expected Response (Success)
+  ```json
+  {
+    "status": true,
+    "message": "Subscription successfully created",
+    "data": {
+      "customer": {...},
+      "plan": {...},
+      "integration": 123456,
+      "authorization": {...},
+      "amount": 9900,
+      "subscription_code": "SUB_xxxxx",
+      "email_token": "xxxxx",
+      "status": "active"
+    }
+  }
+  ```
+
+  ## Expected Response (Already Exists)
+  ```json
+  {
+    "status": false,
+    "message": "This subscription is already in place"
+  }
+  ```
+
+  ## Notes
+  - Requires a plan to be created in Paystack dashboard first
+  - Customer must have made at least one successful payment
+  - Test mode is flaky - may say "already exists" but return 0 subscriptions
+}

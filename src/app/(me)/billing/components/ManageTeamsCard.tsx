@@ -18,20 +18,12 @@ import {
     IconButton,
     Alert,
     AlertIcon,
-    AlertDialog,
-    AlertDialogBody,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogContent,
-    AlertDialogOverlay,
-    useDisclosure,
 } from '@chakra-ui/react';
-import { FiTrash2, FiPlus, FiCalendar, FiX } from 'react-icons/fi';
-import { useRef } from 'react';
+import { FiTrash2, FiPlus, FiCalendar, FiExternalLink } from 'react-icons/fi';
 import { format } from 'date-fns';
 import { useAddTeamMutation } from '@/services/subscription/mutations/use-add-team-mutation';
 import { useRemoveTeamMutation } from '@/services/subscription/mutations/use-remove-team-mutation';
-import { useCancelSubscriptionMutation } from '@/services/subscription/mutations/use-cancel-subscription-mutation';
+import { useGetManagementLinkMutation } from '@/services/subscription/mutations/use-get-management-link-mutation';
 import { useSyncSubscriptionMutation } from '@/services/subscription/mutations/use-sync-subscription-mutation';
 import { useScopesQuery } from '@/services/scope/queries/use-scopes-query';
 
@@ -56,12 +48,10 @@ interface ManageTeamsCardProps {
 
 export function ManageTeamsCard({ subscription, externalSubscriptionId }: ManageTeamsCardProps) {
     const toast = useToast();
-    const { isOpen, onOpen, onClose } = useDisclosure();
-    const cancelRef = useRef<HTMLButtonElement>(null);
     const { data: scopesData, isLoading: scopesLoading } = useScopesQuery();
     const addTeamMutation = useAddTeamMutation();
     const removeTeamMutation = useRemoveTeamMutation();
-    const cancelMutation = useCancelSubscriptionMutation();
+    const getManagementLinkMutation = useGetManagementLinkMutation();
     const syncMutation = useSyncSubscriptionMutation();
 
     const scopes = scopesData || [];
@@ -115,25 +105,28 @@ export function ManageTeamsCard({ subscription, externalSubscriptionId }: Manage
         }
     };
 
-    const handleCancelSubscription = async () => {
+    const handleManageSubscription = async () => {
         try {
-            await cancelMutation.mutateAsync({
-                immediate: false,
-            });
+            const result = await getManagementLinkMutation.mutateAsync();
 
-            toast({
-                title: 'Subscription Cancelled',
-                description: 'Your subscription will remain active until the end of the current billing period.',
-                status: 'success',
-                duration: 5000,
-                isClosable: true,
-            });
+            if (result.success && result.link) {
+                // Open Paystack management page in new tab
+                window.open(result.link, '_blank');
 
-            onClose();
-        } catch (error) {
+                toast({
+                    title: 'Opening Management Page',
+                    description: 'Manage your subscription on Paystack\'s secure page.',
+                    status: 'info',
+                    duration: 3000,
+                    isClosable: true,
+                });
+            } else {
+                throw new Error(result.message || 'Failed to get management link');
+            }
+        } catch (error: any) {
             toast({
-                title: 'Error',
-                description: 'Failed to cancel subscription. Please try again.',
+                title: 'Unable to Open Management Page',
+                description: error?.message || 'Please try again or contact support if the issue persists.',
                 status: 'error',
                 duration: 5000,
                 isClosable: true,
@@ -312,71 +305,26 @@ export function ManageTeamsCard({ subscription, externalSubscriptionId }: Manage
 
                     <Divider />
 
-                    {/* Cancel Subscription */}
+                    {/* Manage Subscription */}
                     <VStack spacing={3}>
                         <Button
-                            colorScheme="red"
+                            colorScheme="blue"
                             variant="outline"
                             size="md"
                             w="full"
-                            onClick={onOpen}
-                            leftIcon={<Icon as={FiX} />}
+                            onClick={handleManageSubscription}
+                            leftIcon={<Icon as={FiExternalLink} />}
+                            isLoading={getManagementLinkMutation.isPending}
                         >
-                            Cancel Subscription
+                            Manage Subscription on Paystack
                         </Button>
                         <Text fontSize="xs" color="chakra-subtle-text" textAlign="center">
-                            You can cancel anytime. Access continues until period end.
+                            Cancel, update payment method, or view billing history on Paystack&apos;s secure page.
                         </Text>
                     </VStack>
                 </VStack>
             </CardBody>
         </Card>
-
-        {/* Confirmation Dialog */}
-        <AlertDialog
-            isOpen={isOpen}
-            leastDestructiveRef={cancelRef}
-            onClose={onClose}
-            isCentered
-        >
-            <AlertDialogOverlay>
-                <AlertDialogContent>
-                    <AlertDialogHeader fontSize="lg" fontWeight="bold">
-                        Cancel Teamtjie+ Subscription?
-                    </AlertDialogHeader>
-
-                    <AlertDialogBody>
-                        <VStack align="stretch" spacing={3}>
-                            <Text>
-                                Your subscription will be cancelled, but you&apos;ll keep access to premium features on all {subscription.teamCount} team{subscription.teamCount !== 1 ? 's' : ''} until the end of your current billing period.
-                            </Text>
-                            {subscription.currentPeriodEnd && (
-                                <Text fontWeight="medium">
-                                    Access until: {format(new Date(subscription.currentPeriodEnd), 'MMM d, yyyy')}
-                                </Text>
-                            )}
-                            <Text fontSize="sm" color="chakra-subtle-text">
-                                You can resubscribe anytime.
-                            </Text>
-                        </VStack>
-                    </AlertDialogBody>
-
-                    <AlertDialogFooter>
-                        <Button ref={cancelRef} onClick={onClose}>
-                            Keep Subscription
-                        </Button>
-                        <Button
-                            colorScheme="red"
-                            onClick={handleCancelSubscription}
-                            ml={3}
-                            isLoading={cancelMutation.isPending}
-                        >
-                            Cancel Subscription
-                        </Button>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialogOverlay>
-        </AlertDialog>
         </>
     );
 }

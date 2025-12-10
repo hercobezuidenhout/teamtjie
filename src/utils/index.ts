@@ -12,6 +12,7 @@ export * from './http-utils';
 export * from './is-descriptive-http-exception';
 export * from './is-http-exception';
 export * from './parse-image';
+export * from './paystack';
 export * from './require-subscription';
 export * from './sendgrid';
 export * from './type-guard-utils';

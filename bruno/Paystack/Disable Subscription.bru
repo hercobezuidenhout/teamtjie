@@ -1,0 +1,66 @@
+meta {
+  name: Disable Subscription
+  type: http
+  seq: 1
+}
+
+post {
+  url: https://api.paystack.co/subscription/disable
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{PAYSTACK_SECRET_KEY}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "code": "SUB_xxxxx",
+    "token": "EMAIL_TOKEN_xxxxx"
+  }
+}
+
+docs {
+  # Disable/Cancel a Paystack Subscription
+
+  ⚠️ **DEPRECATED**: Use "Manage Subscription Link" instead.
+
+  This endpoint requires an EMAIL TOKEN which is only available:
+  - In the subscription creation response
+  - Via email sent to customer
+
+  Since we don't store email tokens, this method won't work.
+
+  ## Request Body
+  - `code`: The subscription code (e.g., SUB_xxxxx)
+  - `token`: The EMAIL TOKEN (NOT the subscription code!)
+
+  ## Expected Response (Success)
+  ```json
+  {
+    "status": true,
+    "message": "Subscription disabled successfully"
+  }
+  ```
+
+  ## Expected Response (Invalid Token)
+  ```json
+  {
+    "status": false,
+    "message": "Subscription with code not found or already inactive"
+  }
+  ```
+
+  ## Why This Fails
+  - We pass subscription code as token (wrong!)
+  - Token should be the email token from subscription creation
+  - We never saved the email token
+
+  ## Solution
+  Use "Manage Subscription Link" endpoint instead.
+}

@@ -147,10 +147,21 @@ export async function getExpiringSubscriptions(daysAhead: number = 3) {
             },
         },
         include: {
-            scope: {
+            user: {
                 select: {
                     id: true,
                     name: true,
+                    email: true,
+                },
+            },
+            teams: {
+                include: {
+                    scope: {
+                        select: {
+                            id: true,
+                            name: true,
+                        },
+                    },
                 },
             },
         },

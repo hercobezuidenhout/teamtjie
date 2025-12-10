@@ -1,0 +1,56 @@
+meta {
+  name: Get Customer Subscriptions
+  type: http
+  seq: 2
+}
+
+get {
+  url: https://api.paystack.co/subscription?customer={{CUSTOMER_CODE}}
+  body: none
+  auth: bearer
+}
+
+params:query {
+  customer: {{CUSTOMER_CODE}}
+}
+
+auth:bearer {
+  token: {{PAYSTACK_SECRET_KEY}}
+}
+
+docs {
+  # Get All Subscriptions for a Customer
+
+  Lists all subscriptions for a specific customer.
+
+  ## Query Parameters
+  - `customer`: Customer code (e.g., CUS_xxxxx)
+
+  ## Expected Response
+  ```json
+  {
+    "status": true,
+    "message": "Subscriptions retrieved",
+    "data": [
+      {
+        "customer": {...},
+        "plan": {...},
+        "integration": 123456,
+        "authorization": {...},
+        "amount": 9900,
+        "cron_expression": "0 0 1 * *",
+        "next_payment_date": "2025-01-10T00:00:00.000Z",
+        "status": "active",
+        "subscription_code": "SUB_xxxxx",
+        "email_token": "xxxxx",
+        "createdAt": "2025-12-10T10:00:00.000Z"
+      }
+    ]
+  }
+  ```
+
+  ## Notes
+  - Replace `{{CUSTOMER_CODE}}` with actual customer code from payment data
+  - Use this to verify if a subscription actually exists
+  - Status can be: active, non-renewing, cancelled, completed
+}

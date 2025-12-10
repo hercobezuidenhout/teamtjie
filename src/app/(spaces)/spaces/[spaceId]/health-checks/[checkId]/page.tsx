@@ -56,11 +56,6 @@ export default function HealthCheckPage() {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const cancelRef = useRef<HTMLButtonElement>(null);
 
-  // Show premium gate if no subscription
-  if (!subscriptionLoading && !subscriptionData?.hasSubscription) {
-    return <PremiumFeatureGate scopeId={spaceId} featureName="Health Checks" />;
-  }
-
   // Initialize answers from existing response or empty (only once per checkId)
   useEffect(() => {
     if (healthCheck?.questions && healthCheck.questions.length > 0 && !initialized) {
@@ -87,6 +82,11 @@ export default function HealthCheckPage() {
   useEffect(() => {
     setInitialized(false);
   }, [checkId]);
+
+  // Show premium gate if no subscription
+  if (!subscriptionLoading && !subscriptionData?.hasSubscription) {
+    return <PremiumFeatureGate scopeId={spaceId} featureName="Health Checks" />;
+  }
 
   if (isLoading) {
     return (

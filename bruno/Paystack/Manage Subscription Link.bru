@@ -1,0 +1,59 @@
+meta {
+  name: Manage Subscription Link
+  type: http
+  seq: 6
+}
+
+post {
+  url: https://api.paystack.co/subscription/manage/link
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{PAYSTACK_SECRET_KEY}}
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "code": "SUB_xxxxx"
+  }
+}
+
+docs {
+  # Generate Subscription Management Link
+
+  This is the CORRECT way to cancel a subscription programmatically.
+  It generates a unique link that the customer can use to manage their subscription.
+
+  ## Request Body
+  - `code`: The subscription code (e.g., SUB_xxxxx)
+
+  ## Expected Response (Success)
+  ```json
+  {
+    "status": true,
+    "message": "Link generated",
+    "data": {
+      "link": "https://paystack.com/manage/subscription/xxxxx"
+    }
+  }
+  ```
+
+  ## How It Works
+  1. Call this endpoint with subscription code
+  2. Get a unique management link
+  3. Either:
+     a) Send link to customer via email
+     b) Or programmatically follow the link to cancel
+
+  ## Notes
+  - This does NOT require email token
+  - Only requires subscription code
+  - Link is time-limited (24 hours typically)
+  - This is Paystack's recommended way for programmatic cancellation
+}

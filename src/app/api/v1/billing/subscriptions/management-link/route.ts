@@ -12,7 +12,7 @@ export const dynamic = 'force-dynamic';
  * Get Paystack management link for user's subscription
  * This link allows users to manage their subscription (cancel, update payment, etc.) on Paystack's hosted page
  */
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const session = await getSession();
     if (!session?.user?.id) {

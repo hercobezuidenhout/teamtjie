@@ -96,7 +96,7 @@ export const SpaceNavigation = () => {
         <ModalContent>
           <ModalCloseButton />
           <ModalBody p={0}>
-            <PremiumFeatureGate scopeId={scopeId} featureName="Health Checks" variant="inline" />
+            <PremiumFeatureGate featureName="Health Checks" variant="inline" />
           </ModalBody>
         </ModalContent>
       </Modal>

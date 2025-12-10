@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSession } from '@/app/utils';
-import { generatePaystackReference } from '@/utils/paystack';
 import { createSubscription } from '@/prisma/commands/subscription-commands';
 import { BILLING_CONFIG } from '@/config/billing';
 import prisma from '@/prisma/prisma';
@@ -16,7 +15,7 @@ export const dynamic = 'force-dynamic';
  * Note: scopeId parameter is just for context, subscription is user-level
  */
 export async function POST(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: { scopeId: string } }
 ) {
   try {

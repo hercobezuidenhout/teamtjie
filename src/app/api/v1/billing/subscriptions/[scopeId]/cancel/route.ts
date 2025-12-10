@@ -15,8 +15,7 @@ export const dynamic = 'force-dynamic';
  * Note: scopeId is ignored, cancels user's subscription
  */
 export async function POST(
-  request: NextRequest,
-  { params }: { params: { scopeId: string } }
+  request: NextRequest
 ) {
   try {
     const session = await getSession();
@@ -58,17 +57,27 @@ export async function POST(
           console.error('Paystack cancellation failed:', result.message, result.paystackResponse);
 
           // If subscription doesn't exist in Paystack, that's okay - continue with local cancellation
-          if (result.paystackResponse?.code === 'not_found') {
+          const paystackCode = result.paystackResponse && typeof result.paystackResponse === 'object' && 'code' in result.paystackResponse
+            ? result.paystackResponse.code
+            : undefined;
+          if (paystackCode === 'not_found') {
             console.log('Subscription not found in Paystack - proceeding with local cancellation only');
           }
         } else {
+          const paystackData = result.paystackResponse && typeof result.paystackResponse === 'object' && 'data' in result.paystackResponse
+            ? result.paystackResponse.data
+            : undefined;
+          const link = paystackData && typeof paystackData === 'object' && 'link' in paystackData
+            ? paystackData.link
+            : undefined;
+
           console.log('Paystack management link generated:', {
             subscriptionCode: subscription.externalSubscriptionId,
-            hasLink: !!result.paystackResponse?.data?.link,
+            hasLink: !!link,
           });
 
           // Extract management link if available
-          managementLink = result.paystackResponse?.data?.link;
+          managementLink = typeof link === 'string' ? link : undefined;
         }
       } catch (error) {
         console.error('Error calling Paystack cancel:', error);

@@ -1,5 +1,6 @@
 import { prisma } from '../prisma';
-import { SubscriptionStatus, TransactionType } from '@prisma/client';
+import { SubscriptionStatus, SubscriptionType, TransactionType } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 
 export interface CreateSubscriptionData {
     userId: string;
@@ -18,7 +19,7 @@ export async function createSubscription(data: CreateSubscriptionData) {
             amount: data.amount,
             currency: data.currency,
             billingCycle: data.billingCycle,
-            subscriptionType: data.subscriptionType || 'TEAMTJIE_PLUS',
+            subscriptionType: (data.subscriptionType as SubscriptionType) || SubscriptionType.TEAMTJIE_PLUS,
             subscribedBy: data.userId,
             status: SubscriptionStatus.PENDING,
         },
@@ -82,7 +83,7 @@ export interface CreateTransactionData {
     amount: number;
     currency: string;
     externalPaymentId?: string;
-    externalMetadata?: Record<string, unknown>;
+    externalMetadata?: Prisma.InputJsonValue;
     processedAt?: Date;
 }
 
@@ -134,7 +135,7 @@ export async function addTeamToSubscription(data: AddTeamToSubscriptionData) {
     });
 }
 
-export async function removeTeamFromSubscription(subscriptionId: number, scopeId: number) {
+export async function removeTeamFromSubscription(scopeId: number) {
     // Since scopeId is unique, we can delete by scopeId alone
     return prisma.subscriptionScope.delete({
         where: {

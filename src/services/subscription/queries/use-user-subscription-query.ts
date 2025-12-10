@@ -20,6 +20,8 @@ interface UserSubscriptionResponse {
     currentPeriodStart?: string | null;
     currentPeriodEnd?: string | null;
     cancelAtPeriodEnd?: boolean;
+    externalSubscriptionId?: string | null;
+    externalCustomerId?: string | null;
     createdAt: string;
     teams: Team[];
     teamCount: number;

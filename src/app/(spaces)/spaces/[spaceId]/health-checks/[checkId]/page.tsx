@@ -85,7 +85,7 @@ export default function HealthCheckPage() {
 
   // Show premium gate if no subscription
   if (!subscriptionLoading && !subscriptionData?.hasSubscription) {
-    return <PremiumFeatureGate scopeId={spaceId} featureName="Health Checks" />;
+    return <PremiumFeatureGate featureName="Health Checks" />;
   }
 
   if (isLoading) {

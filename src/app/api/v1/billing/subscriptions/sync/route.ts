@@ -14,7 +14,7 @@ export const dynamic = 'force-dynamic';
  * Sync missing externalSubscriptionId from Paystack
  * Useful for fixing subscriptions that didn't get the ID during initial setup
  */
-export async function POST(request: NextRequest) {
+export async function POST(_request: NextRequest) {
   try {
     const session = await getSession();
     if (!session?.user?.id) {
@@ -102,7 +102,7 @@ export async function POST(request: NextRequest) {
       data: {
         externalSubscriptionId: activeSubscription.subscription_code,
         externalMetadata: {
-          ...subscription.externalMetadata,
+          ...(subscription.externalMetadata && typeof subscription.externalMetadata === 'object' ? subscription.externalMetadata : {}),
           email_token: activeSubscription.email_token,
           next_payment_date: activeSubscription.next_payment_date,
           synced_at: new Date().toISOString(),

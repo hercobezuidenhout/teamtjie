@@ -35,7 +35,7 @@ export default function HealthChecksPage() {
 
   // Show premium gate if no subscription
   if (!subscriptionLoading && !subscriptionData?.hasSubscription) {
-    return <PremiumFeatureGate scopeId={scopeId} featureName="Health Checks" />;
+    return <PremiumFeatureGate featureName="Health Checks" />;
   }
 
   const handleCreateHealthCheck = async () => {

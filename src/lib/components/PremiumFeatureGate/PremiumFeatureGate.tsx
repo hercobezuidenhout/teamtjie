@@ -19,14 +19,12 @@ import { useRouter } from 'next/navigation';
 import { BILLING_CONFIG } from '@/config/billing';
 
 interface PremiumFeatureGateProps {
-    scopeId: number;
     featureName?: string;
     onUpgrade?: () => void;
     variant?: 'card' | 'inline';
 }
 
 export function PremiumFeatureGate({
-    scopeId,
     featureName = 'this feature',
     onUpgrade,
     variant = 'card'

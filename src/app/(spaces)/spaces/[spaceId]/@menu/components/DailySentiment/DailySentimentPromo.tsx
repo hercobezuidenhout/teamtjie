@@ -16,10 +16,9 @@ import { FiTrendingUp, FiLock } from 'react-icons/fi';
 import { useRouter } from 'next/navigation';
 
 interface DailySentimentPromoProps {
-  scopeId: number;
 }
 
-export const DailySentimentPromo = ({ scopeId }: DailySentimentPromoProps) => {
+export const DailySentimentPromo = ({}: DailySentimentPromoProps) => {
   const router = useRouter();
 
   const handleUpgrade = () => {

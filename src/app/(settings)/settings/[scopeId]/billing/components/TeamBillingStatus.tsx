@@ -33,7 +33,6 @@ interface TeamBillingStatusProps {
 
 export function TeamBillingStatus({
     scopeId,
-    scopeName,
     hasSubscription,
     subscribedBy,
     userHasSubscription,

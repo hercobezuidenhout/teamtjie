@@ -16,7 +16,7 @@ import {
     AlertIcon,
     Icon,
 } from '@chakra-ui/react';
-import { FiCheck, FiExternalLink, FiCreditCard } from 'react-icons/fi';
+import { FiCheck, FiExternalLink, FiX } from 'react-icons/fi';
 import { format } from 'date-fns';
 import { useGetManagementLinkMutation } from '@/services/subscription/mutations/use-get-management-link-mutation';
 
@@ -34,13 +34,17 @@ interface ManageSubscriptionProps {
     };
 }
 
-export function ManageSubscription({ scopeId, subscription }: ManageSubscriptionProps) {
+export function ManageSubscription({ subscription }: ManageSubscriptionProps) {
     const toast = useToast();
     const getManagementLinkMutation = useGetManagementLinkMutation();
 
     const handleManageSubscription = async () => {
         try {
             const result = await getManagementLinkMutation.mutateAsync();
+
+            if (!result) {
+                throw new Error('Failed to get management link');
+            }
 
             if (result.success && result.link) {
                 // Open Paystack management page in new tab
@@ -87,8 +91,8 @@ export function ManageSubscription({ scopeId, subscription }: ManageSubscription
                                 isPendingCancellation
                                     ? 'orange'
                                     : isActive
-                                    ? 'green'
-                                    : 'gray'
+                                        ? 'green'
+                                        : 'gray'
                             }
                             fontSize="sm"
                         >

@@ -4,7 +4,6 @@ import {
   verifyPaystackPayment,
   validatePaymentAmount,
   isPaymentSuccessful,
-  extractPaystackMetadata,
   calculateNextBillingDate,
   subscribeCustomerToPlan,
   PaystackError,
@@ -14,7 +13,7 @@ import {
   activateSubscription,
   createSubscriptionTransaction,
 } from '@/prisma/commands/subscription-commands';
-import { SubscriptionStatus, TransactionType } from '@prisma/client';
+import { SubscriptionStatus, TransactionType, Prisma } from '@prisma/client';
 
 export const dynamic = 'force-dynamic';
 
@@ -96,15 +95,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Extract metadata
-    const metadata = extractPaystackMetadata(paymentData);
-
     // Subscribe customer to Paystack Plan for recurring billing
     let subscriptionResponse;
     try {
       subscriptionResponse = await subscribeCustomerToPlan(
-        paymentData.customer.customer_code,
-        paymentData.customer.email
+        paymentData.customer.customer_code
       );
       console.log('Customer subscribed to plan:', subscriptionResponse.data.subscription_code);
     } catch (error) {
@@ -130,9 +125,9 @@ export async function POST(request: NextRequest) {
       subscriptionId: subscription.id,
       type: TransactionType.PAYMENT_COMPLETE,
       amount: paymentData.amount / 100, // Convert kobo to rand
-      currency: paymentData.metadata?.currency || 'ZAR',
+      currency: (paymentData.metadata?.currency as string | undefined) || 'ZAR',
       externalPaymentId: reference,
-      externalMetadata: paymentData,
+      externalMetadata: paymentData as Prisma.InputJsonValue,
       processedAt: new Date(paymentData.paid_at),
     });
 

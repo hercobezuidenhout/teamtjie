@@ -2,8 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSession } from '@/app/utils';
 import { getUserSubscription } from '@/prisma/queries/subscription-queries';
 import { removeTeamFromSubscription } from '@/prisma/commands/subscription-commands';
-import { SubscriptionStatus } from '@prisma/client';
-import prisma from '@/prisma/prisma';
 
 export const dynamic = 'force-dynamic';
 
@@ -58,7 +56,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Remove team from subscription
-    await removeTeamFromSubscription(subscription.id, numericScopeId);
+    await removeTeamFromSubscription(numericScopeId);
 
     console.log('Team removed from subscription:', numericScopeId);
 

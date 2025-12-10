@@ -7,12 +7,12 @@ interface SubscriptionResponse {
   subscription: {
     id: number;
     status: string;
-    amount: number;
-    currency: string;
-    currentPeriodStart?: string | null;
-    currentPeriodEnd?: string | null;
-    cancelAtPeriodEnd?: boolean;
-    createdAt: string;
+    subscribedBy: {
+      id: string;
+      name: string;
+      email: string;
+    };
+    addedAt: string;
   } | null;
 }
 

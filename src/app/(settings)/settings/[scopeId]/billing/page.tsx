@@ -18,7 +18,7 @@ import { useCurrentUserQuery } from '@/services/user/queries/use-current-user-qu
 import { useScopeQuery } from '@/services/scope/queries/use-scope-query';
 import { useSubscriptionQuery } from '@/services/subscription/queries/use-subscription-query';
 import { useUserSubscriptionQuery } from '@/services/subscription/queries/use-user-subscription-query';
-import { useScopes } from '@/contexts/ScopeProvider';
+import { useScopesQuery } from '@/services/scope/queries/use-scopes-query';
 
 interface BillingPageProps {
     params: { scopeId: string; };
@@ -32,10 +32,10 @@ export default function BillingPage({ params }: BillingPageProps) {
     const { data: scope, isLoading: scopeLoading, error: scopeError } = useScopeQuery(numericScopeId);
     const { data: teamSubscriptionData, isLoading: teamSubscriptionLoading } = useSubscriptionQuery(numericScopeId);
     const { data: userSubscriptionData, isLoading: userSubscriptionLoading } = useUserSubscriptionQuery();
-    const { scopes } = useScopes();
+    const { data: scopes, isLoading: scopesLoading } = useScopesQuery();
 
     // Loading state
-    if (userLoading || scopeLoading || teamSubscriptionLoading || userSubscriptionLoading) {
+    if (userLoading || scopeLoading || teamSubscriptionLoading || userSubscriptionLoading || scopesLoading) {
         return (
             <Container maxW="container.lg" py={8}>
                 <VStack spacing={4}>
@@ -97,7 +97,7 @@ export default function BillingPage({ params }: BillingPageProps) {
                         scopeName={scope.name}
                         userEmail={user.email || ''}
                         userName={user.name}
-                        userScopes={scopes}
+                        userScopes={scopes || []}
                     />
                 )}
             </VStack>

@@ -12,7 +12,7 @@ export const dynamic = 'force-dynamic';
  * Returns whether this team has premium access and whose subscription provides it
  */
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: { scopeId: string } }
 ) {
   try {

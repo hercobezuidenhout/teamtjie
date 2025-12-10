@@ -8,10 +8,8 @@ import {
     Box,
     Spinner,
     Alert,
-    AlertIcon,
-    Button,
+    AlertIcon
 } from '@chakra-ui/react';
-import { useRouter } from 'next/navigation';
 import { useUserSubscriptionQuery } from '@/services/subscription/queries/use-user-subscription-query';
 import { useCurrentUserQuery } from '@/services/user/queries/use-current-user-query';
 import { useScopesQuery } from '@/services/scope/queries/use-scopes-query';
@@ -19,7 +17,6 @@ import { ManageTeamsCard } from './components/ManageTeamsCard';
 import { SubscribeCard } from './components/SubscribeCard';
 
 export default function UserBillingPage() {
-    const router = useRouter();
     const { data: user, isLoading: userLoading } = useCurrentUserQuery();
     const { data: subscriptionData, isLoading: subscriptionLoading } = useUserSubscriptionQuery();
     const { data: scopes, isLoading: scopesLoading } = useScopesQuery();

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import type { PaystackWebhookEvent } from '@/utils/paystack';
 import {
   parsePaystackWebhook,
   extractPaystackMetadata,
@@ -15,7 +16,7 @@ import {
   updateSubscriptionStatus,
   updateSubscriptionPeriod,
 } from '@/prisma/commands/subscription-commands';
-import { SubscriptionStatus, TransactionType } from '@prisma/client';
+import { SubscriptionStatus, TransactionType, Prisma } from '@prisma/client';
 import prisma from '@/prisma/prisma';
 
 export const dynamic = 'force-dynamic';
@@ -137,7 +138,7 @@ function hasValidPeriodEnd(subscription: { currentPeriodEnd: Date | null }): boo
 async function logSubscriptionTransaction(
   subscription: { id: number; currency: string },
   type: TransactionType,
-  data: Record<string, unknown>,
+  data: PaystackWebhookEvent['data'],
   reference?: string
 ) {
   return createSubscriptionTransaction({
@@ -145,8 +146,8 @@ async function logSubscriptionTransaction(
     type,
     amount: 0, // Status changes always log 0 amount
     currency: subscription.currency,
-    externalPaymentId: reference || data.subscription?.subscription_code || data.reference,
-    externalMetadata: data,
+    externalPaymentId: reference || data.subscription?.subscription_code || (data.reference as string | undefined),
+    externalMetadata: data as Prisma.InputJsonValue,
     processedAt: new Date(),
   });
 }
@@ -232,9 +233,9 @@ async function handleChargeSuccess(event: PaystackWebhookEvent) {
     subscriptionId: subscription.id,
     type: TransactionType.PAYMENT_COMPLETE,
     amount: data.amount / 100, // Convert kobo to rand
-    currency: data.metadata?.currency || 'ZAR',
+    currency: (data.metadata?.currency as string | undefined) || 'ZAR',
     externalPaymentId: reference,
-    externalMetadata: data,
+    externalMetadata: data as Prisma.InputJsonValue,
     processedAt: new Date(data.paid_at),
   });
 }

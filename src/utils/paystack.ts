@@ -65,13 +65,13 @@ export interface PaystackSubscriptionResponse {
   status: boolean;
   message: string;
   data: {
-    customer: string;
-    plan: string;
+    customer?: string;
+    plan?: string;
     subscription_code: string;
     email_token: string;
-    amount: number;
+    amount?: number;
     status: string;
-    next_payment_date: string;
+    next_payment_date?: string;
   };
 }
 
@@ -161,6 +161,7 @@ export async function getCustomerSubscriptions(customerCode: string): Promise<{
     email_token: string;
     plan?: { plan_code: string };
     status: string;
+    next_payment_date?: string;
   }>;
 }> {
   const response = await fetch(
@@ -186,8 +187,7 @@ export async function getCustomerSubscriptions(customerCode: string): Promise<{
  * Checks for existing subscription first to avoid duplicates
  */
 export async function subscribeCustomerToPlan(
-  customerCode: string,
-  email: string
+  customerCode: string
 ): Promise<PaystackSubscriptionResponse> {
   const planCode = BILLING_CONFIG.paystack.planCode;
 
@@ -212,7 +212,13 @@ export async function subscribeCustomerToPlan(
         return {
           status: true,
           message: 'Using existing subscription',
-          data: activeSubscription,
+          data: {
+            subscription_code: activeSubscription.subscription_code,
+            email_token: activeSubscription.email_token,
+            status: activeSubscription.status,
+            plan: activeSubscription.plan?.plan_code,
+            next_payment_date: activeSubscription.next_payment_date,
+          },
         };
       }
     }
@@ -253,7 +259,13 @@ export async function subscribeCustomerToPlan(
           return {
             status: true,
             message: 'Using existing subscription',
-            data: activeSubscription,
+            data: {
+              subscription_code: activeSubscription.subscription_code,
+              email_token: activeSubscription.email_token,
+              status: activeSubscription.status,
+              plan: activeSubscription.plan?.plan_code,
+              next_payment_date: activeSubscription.next_payment_date,
+            },
           };
         }
       }
@@ -323,26 +335,39 @@ export async function generateSubscriptionManagementLink(
 
     // If no data or response not ok
     if (!response.ok || !data) {
+      const errorMessage = data && typeof data === 'object' && 'message' in data && typeof data.message === 'string'
+        ? data.message
+        : `Paystack API error: ${response.status} ${response.statusText}`;
       return {
         success: false,
-        message: data?.message || `Paystack API error: ${response.status} ${response.statusText}`,
+        message: errorMessage,
         paystackResponse: data,
       };
     }
 
     // Check if Paystack returned success
     if (!data.status) {
+      const errorMessage = 'message' in data && typeof data.message === 'string'
+        ? data.message
+        : 'Failed to generate management link';
       return {
         success: false,
-        message: data.message || 'Failed to generate management link',
+        message: errorMessage,
         paystackResponse: data,
       };
     }
 
+    const successMessage = 'message' in data && typeof data.message === 'string'
+      ? data.message
+      : 'Management link generated';
+    const linkData = 'data' in data && typeof data.data === 'object' && data.data && 'link' in data.data
+      ? data.data.link
+      : undefined;
+
     return {
       success: true,
-      message: data.message || 'Management link generated',
-      link: data.data?.link,
+      message: successMessage,
+      link: typeof linkData === 'string' ? linkData : undefined,
       paystackResponse: data,
     };
   } catch (error) {

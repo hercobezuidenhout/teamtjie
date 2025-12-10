@@ -10,7 +10,7 @@ export const dynamic = 'force-dynamic';
  * Get current user's subscription with included teams
  * Used by user billing page
  */
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const session = await getSession();
     if (!session?.user?.id) {

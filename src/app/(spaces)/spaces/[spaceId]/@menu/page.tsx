@@ -18,7 +18,7 @@ const Page = async ({ params }: PageProps) => {
 
     return (
         <VStack align="stretch" gap={4}>
-            {hasSubscription ? <DailySentimentWidget /> : <DailySentimentPromo scopeId={scopeId} />}
+            {hasSubscription ? <DailySentimentWidget /> : <DailySentimentPromo />}
             <ScopeMission mission={scope.description || undefined} />
             <ScopeValues id={scope.id} />
         </VStack>

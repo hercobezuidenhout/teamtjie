@@ -9,6 +9,7 @@ import {
 import { getSubscriptionByReference } from '@/prisma/queries/subscription-queries';
 import {
   activateSubscription,
+  cancelSubscription,
   createSubscriptionTransaction,
   updateSubscriptionStatus,
   updateSubscriptionPeriod,
@@ -65,6 +66,10 @@ export async function POST(request: NextRequest) {
 
       case 'subscription.disable':
         await handleSubscriptionDisable(event);
+        break;
+
+      case 'charge.failed':
+        await handleChargeFailed(event);
         break;
 
       default:
@@ -147,6 +152,15 @@ async function handleChargeSuccess(event: PaystackWebhookEvent) {
 
       await updateSubscriptionPeriod(subscription.id, periodStart, periodEnd);
 
+      // Reset cancellation flag if payment succeeds after user cancelled
+      if (subscription.cancelAtPeriodEnd) {
+        await prisma.subscription.update({
+          where: { id: subscription.id },
+          data: { cancelAtPeriodEnd: false },
+        });
+        console.log('Subscription re-enabled, cancellation flag reset:', subscription.id);
+      }
+
       console.log('Subscription period extended:', subscription.id);
     } else {
       console.log('Subscription already active, no period to extend:', subscription.id);
@@ -219,8 +233,16 @@ async function handleSubscriptionDisable(event: PaystackWebhookEvent) {
     return;
   }
 
-  // Update status to cancelled
-  await updateSubscriptionStatus(subscription.id, SubscriptionStatus.CANCELLED);
+  // Check if subscription has a billing period end date
+  if (subscription.currentPeriodEnd && subscription.currentPeriodEnd > new Date()) {
+    // Cancel at period end - keep subscription active
+    await cancelSubscription(subscription.id, true); // cancelAtPeriodEnd = true
+    console.log('Subscription marked to cancel at period end:', subscription.id);
+  } else {
+    // No valid period end or already expired - cancel immediately
+    await updateSubscriptionStatus(subscription.id, SubscriptionStatus.CANCELLED);
+    console.log('Subscription cancelled immediately:', subscription.id);
+  }
 
   // Create transaction record
   await createSubscriptionTransaction({
@@ -232,6 +254,48 @@ async function handleSubscriptionDisable(event: PaystackWebhookEvent) {
     externalMetadata: data,
     processedAt: new Date(),
   });
+}
 
-  console.log('Subscription cancelled:', subscription.id);
+/**
+ * Handle failed payment charge
+ * This can occur when a cancelled subscription reaches its renewal date
+ */
+async function handleChargeFailed(event: PaystackWebhookEvent) {
+  const { data } = event;
+  const metadata = extractPaystackMetadata(data);
+
+  // Try to find subscription by subscription code
+  if (!metadata.subscriptionCode) {
+    console.log('No subscription code in failed charge event');
+    return;
+  }
+
+  const subscription = await prisma.subscription.findUnique({
+    where: { externalSubscriptionId: metadata.subscriptionCode },
+  });
+
+  if (!subscription) {
+    console.log('Subscription not found for failed charge:', metadata.subscriptionCode);
+    return;
+  }
+
+  // If subscription was marked to cancel at period end, now mark it as cancelled
+  if (subscription.cancelAtPeriodEnd) {
+    await updateSubscriptionStatus(subscription.id, SubscriptionStatus.CANCELLED);
+    console.log('Subscription expired after cancellation:', subscription.id);
+
+    // Create transaction record
+    await createSubscriptionTransaction({
+      subscriptionId: subscription.id,
+      type: TransactionType.PAYMENT_FAILED,
+      amount: 0,
+      currency: subscription.currency,
+      externalPaymentId: data.reference,
+      externalMetadata: data,
+      processedAt: new Date(),
+    });
+  } else {
+    console.log('Payment failed for active subscription:', subscription.id);
+    // Could send notification to user about payment failure
+  }
 }

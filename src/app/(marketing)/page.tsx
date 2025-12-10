@@ -14,7 +14,6 @@ import {
   CardBody,
   CardFooter,
   Icon,
-  Avatar,
   Badge,
   Flex,
   useColorModeValue,

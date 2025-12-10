@@ -319,8 +319,11 @@ async function handleSubscriptionCreate(event: PaystackWebhookEvent) {
 async function handleSubscriptionNotRenew(event: PaystackWebhookEvent) {
   console.log('🚫 Processing subscription.not_renew (User cancelled)');
   const { data } = event;
-  const subscriptionCode = data.subscription?.subscription_code;
+
+  // subscription_code can be at root level or nested in subscription object
+  const subscriptionCode = (data as { subscription_code?: string; }).subscription_code || data.subscription?.subscription_code;
   console.log('   Subscription Code:', subscriptionCode);
+  console.log('   Data keys:', Object.keys(data));
 
   const subscription = await findSubscriptionByCode(
     subscriptionCode,
@@ -358,8 +361,11 @@ async function handleSubscriptionNotRenew(event: PaystackWebhookEvent) {
 async function handleSubscriptionDisable(event: PaystackWebhookEvent) {
   console.log('🛑 Processing subscription.disable');
   const { data } = event;
-  const subscriptionCode = data.subscription?.subscription_code;
+
+  // subscription_code can be at root level or nested in subscription object
+  const subscriptionCode = (data as { subscription_code?: string; }).subscription_code || data.subscription?.subscription_code;
   console.log('   Subscription Code:', subscriptionCode);
+  console.log('   Data keys:', Object.keys(data));
 
   const subscription = await findSubscriptionByCode(
     subscriptionCode,

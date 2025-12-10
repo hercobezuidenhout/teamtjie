@@ -14,6 +14,7 @@ import {
   createSubscriptionTransaction,
 } from '@/prisma/commands/subscription-commands';
 import { SubscriptionStatus, TransactionType, Prisma } from '@prisma/client';
+import prisma from '@/prisma/prisma';
 
 export const dynamic = 'force-dynamic';
 
@@ -54,6 +55,38 @@ export async function POST(request: NextRequest) {
     // Check if already activated
     if (subscription.status === SubscriptionStatus.ACTIVE) {
       console.log('Subscription already active:', subscription.id);
+
+      // If subscription is active but missing Paystack subscription code, set it up
+      if (!subscription.externalSubscriptionId) {
+        console.log('Active subscription missing Paystack subscription code, setting up recurring billing...');
+
+        try {
+          // Verify payment to get customer code
+          const paymentVerification = await verifyPaystackPayment(reference);
+          const paymentData = paymentVerification.data;
+
+          // Subscribe customer to Paystack Plan for recurring billing
+          const subscriptionResponse = await subscribeCustomerToPlan(
+            paymentData.customer.customer_code
+          );
+          console.log('Paystack subscription created:', subscriptionResponse.data.subscription_code);
+
+          // Update subscription with Paystack subscription code
+          await prisma.subscription.update({
+            where: { id: subscription.id },
+            data: {
+              externalSubscriptionId: subscriptionResponse.data.subscription_code,
+              externalCustomerId: paymentData.customer.customer_code,
+            },
+          });
+
+          console.log('Subscription updated with Paystack subscription code');
+        } catch (error) {
+          console.error('Failed to set up recurring billing:', error);
+          // Don't fail the request - subscription is still active
+        }
+      }
+
       return NextResponse.json({
         success: true,
         message: 'Subscription already active',

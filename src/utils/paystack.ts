@@ -22,7 +22,7 @@ export interface PaystackWebhookEvent {
     metadata?: {
       scopeId?: number;
       scopeName?: string;
-      [key: string]: any;
+      [key: string]: unknown;
     };
     status?: string;
     paid_at?: string;
@@ -36,7 +36,7 @@ export interface PaystackWebhookEvent {
       subscription_code: string;
       email_token: string;
     };
-    [key: string]: any;
+    [key: string]: unknown;
   };
 }
 
@@ -57,7 +57,7 @@ export interface PaystackVerifyResponse {
       card_type: string;
       last4: string;
     };
-    metadata?: Record<string, any>;
+    metadata?: Record<string, unknown>;
   };
 }
 
@@ -154,7 +154,15 @@ export async function verifyPaystackPayment(
 /**
  * Check if customer has existing Paystack subscriptions
  */
-export async function getCustomerSubscriptions(customerCode: string): Promise<any> {
+export async function getCustomerSubscriptions(customerCode: string): Promise<{
+  status: boolean;
+  data: Array<{
+    subscription_code: string;
+    email_token: string;
+    plan?: { plan_code: string };
+    status: string;
+  }>;
+}> {
   const response = await fetch(
     `https://api.paystack.co/subscription?customer=${customerCode}`,
     {
@@ -193,7 +201,7 @@ export async function subscribeCustomerToPlan(
 
     if (existingSubscriptions.status && existingSubscriptions.data) {
       const activeSubscription = existingSubscriptions.data.find(
-        (sub: any) =>
+        (sub) =>
           sub.plan?.plan_code === planCode &&
           (sub.status === 'active' || sub.status === 'non-renewing')
       );
@@ -235,7 +243,7 @@ export async function subscribeCustomerToPlan(
       const existingSubscriptions = await getCustomerSubscriptions(customerCode);
       if (existingSubscriptions.status && existingSubscriptions.data) {
         const activeSubscription = existingSubscriptions.data.find(
-          (sub: any) =>
+          (sub) =>
             sub.plan?.plan_code === planCode &&
             (sub.status === 'active' || sub.status === 'non-renewing')
         );
@@ -275,7 +283,7 @@ export async function subscribeCustomerToPlan(
  */
 export async function generateSubscriptionManagementLink(
   subscriptionCode: string
-): Promise<{ success: boolean; message?: string; link?: string; paystackResponse?: any }> {
+): Promise<{ success: boolean; message?: string; link?: string; paystackResponse?: Record<string, unknown> }> {
   try {
     const response = await fetch(
       `https://api.paystack.co/subscription/${subscriptionCode}/manage/link`,
@@ -289,7 +297,7 @@ export async function generateSubscriptionManagementLink(
 
     // Check if response has content before parsing JSON
     const contentType = response.headers.get('content-type');
-    let data: any = null;
+    let data: Record<string, unknown> | null = null;
 
     if (contentType && contentType.includes('application/json')) {
       const text = await response.text();
@@ -352,7 +360,7 @@ export async function generateSubscriptionManagementLink(
  */
 export async function cancelPaystackSubscription(
   subscriptionCode: string
-): Promise<{ success: boolean; message?: string; paystackResponse?: any }> {
+): Promise<{ success: boolean; message?: string; paystackResponse?: Record<string, unknown> }> {
   // This method requires email token which we don't have
   // Redirect to management link method instead
   const result = await generateSubscriptionManagementLink(subscriptionCode);
@@ -400,14 +408,19 @@ export function validatePaymentAmount(
 /**
  * Check if payment is successful
  */
-export function isPaymentSuccessful(data: any): boolean {
-  return data.status === 'success' && data.paid_at;
+export function isPaymentSuccessful(data: { status?: string; paid_at?: string }): boolean {
+  return data.status === 'success' && !!data.paid_at;
 }
 
 /**
  * Extract metadata from Paystack webhook/response
  */
-export function extractPaystackMetadata(data: any): {
+export function extractPaystackMetadata(data: {
+  metadata?: { scopeId?: string | number; scopeName?: string };
+  customer?: { customer_code?: string };
+  authorization?: { authorization_code?: string };
+  subscription?: { subscription_code?: string };
+}): {
   scopeId?: number;
   scopeName?: string;
   customerCode?: string;
@@ -472,14 +485,14 @@ export class PaystackError extends Error {
 /**
  * Handle Paystack API errors
  */
-export function handlePaystackError(error: any): never {
+export function handlePaystackError(error: unknown): never {
   if (error instanceof PaystackError) {
     throw error;
   }
 
-  const message = error?.message || 'Paystack API error';
-  const code = error?.code || 'UNKNOWN_ERROR';
-  const statusCode = error?.statusCode || 500;
+  const message = error instanceof Error ? error.message : 'Paystack API error';
+  const code = (error && typeof error === 'object' && 'code' in error && typeof error.code === 'string') ? error.code : 'UNKNOWN_ERROR';
+  const statusCode = (error && typeof error === 'object' && 'statusCode' in error && typeof error.statusCode === 'number') ? error.statusCode : 500;
 
   throw new PaystackError(message, code, statusCode);
 }

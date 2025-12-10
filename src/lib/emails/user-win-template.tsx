@@ -28,8 +28,9 @@ export const UserWinTemplate: React.FC<Readonly<UserWinTemplateProps>> = ({
                 gap: '10px',
                 justifyContent: 'start'
             }}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src="https://Teamtjie.app/icon-192x192.png" width="40px"
-                    height="40px" />
+                    height="40px" alt="Teamtjie logo" />
                 <h4>Teamtjie</h4>
             </div>
             <div>
@@ -48,7 +49,8 @@ export const UserWinTemplate: React.FC<Readonly<UserWinTemplateProps>> = ({
                 gap: '1.5rem'
             }}>
             <div>
-                <img src='https://Teamtjie.app/assets/gifs/leonardo-dicaprio-cheers.gif' width="100%" />
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src='https://Teamtjie.app/assets/gifs/leonardo-dicaprio-cheers.gif' width="100%" alt="Celebration" />
             </div>
             <h2 style={{ margin: 0 }}>You have been awarded a win!</h2>
             <p style={{ margin: 0 }}>&quot;for {description}&quot;</p>

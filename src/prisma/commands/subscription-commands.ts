@@ -18,7 +18,7 @@ export async function createSubscription(data: CreateSubscriptionData) {
             amount: data.amount,
             currency: data.currency,
             billingCycle: data.billingCycle,
-            subscriptionType: data.subscriptionType as any || 'TEAMTJIE_PLUS',
+            subscriptionType: data.subscriptionType || 'TEAMTJIE_PLUS',
             subscribedBy: data.userId,
             status: SubscriptionStatus.PENDING,
         },
@@ -82,7 +82,7 @@ export interface CreateTransactionData {
     amount: number;
     currency: string;
     externalPaymentId?: string;
-    externalMetadata?: any;
+    externalMetadata?: Record<string, unknown>;
     processedAt?: Date;
 }
 

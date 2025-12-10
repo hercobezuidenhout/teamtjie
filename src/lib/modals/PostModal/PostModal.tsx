@@ -76,7 +76,7 @@ export const PostModal = ({ isOpen, onClose, initialPostType, initialScope }: Po
             setDescription('');
             setSelectedValues([]);
         };
-    }, [initialPostType]);
+    }, [initialPostType, initialScope]);
 
 
     return (

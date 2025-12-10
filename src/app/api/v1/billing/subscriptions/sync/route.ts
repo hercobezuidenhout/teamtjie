@@ -75,7 +75,7 @@ export async function POST(request: NextRequest) {
     // Find active subscription for our plan
     const planCode = BILLING_CONFIG.paystack.planCode;
     const activeSubscription = paystackSubscriptions.data.find(
-      (sub: any) =>
+      (sub: { plan?: { plan_code: string }; status: string }) =>
         sub.plan?.plan_code === planCode &&
         (sub.status === 'active' || sub.status === 'non-renewing')
     );
@@ -84,7 +84,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           error: 'No active Paystack subscription found for this customer',
-          availableSubscriptions: paystackSubscriptions.data.map((s: any) => ({
+          availableSubscriptions: paystackSubscriptions.data.map((s: { subscription_code: string; status: string; plan?: { plan_code: string } }) => ({
             code: s.subscription_code,
             status: s.status,
             plan: s.plan?.plan_code,

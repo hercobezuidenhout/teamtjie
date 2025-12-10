@@ -56,10 +56,10 @@ export function ManageSubscription({ scopeId, subscription }: ManageSubscription
             } else {
                 throw new Error(result.message || 'Failed to get management link');
             }
-        } catch (error: any) {
+        } catch (error: unknown) {
             toast({
                 title: 'Unable to Open Management Page',
-                description: error?.message || 'Please try again or contact support if the issue persists.',
+                description: error instanceof Error ? error.message : 'Please try again or contact support if the issue persists.',
                 status: 'error',
                 duration: 5000,
                 isClosable: true,

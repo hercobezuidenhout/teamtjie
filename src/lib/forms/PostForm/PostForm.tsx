@@ -35,7 +35,7 @@ export const PostForm = ({ scope }: PostFormProps) => {
         const availablePostTypes = ['WIN'];
         const typesUserCanPost = availablePostTypes.filter(type => abilities.can('post', subject('Post', { scopeId: scope.id, type })));
         setPostAbilities(typesUserCanPost);
-    }, [abilities]);
+    }, [abilities, scope.id]);
 
     return (
         <>

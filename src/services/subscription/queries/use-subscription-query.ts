@@ -4,7 +4,16 @@ import { ENDPOINTS } from '@/services/endpoints';
 
 interface SubscriptionResponse {
   hasSubscription: boolean;
-  subscription: any | null;
+  subscription: {
+    id: number;
+    status: string;
+    amount: number;
+    currency: string;
+    currentPeriodStart?: string | null;
+    currentPeriodEnd?: string | null;
+    cancelAtPeriodEnd?: boolean;
+    createdAt: string;
+  } | null;
 }
 
 /**

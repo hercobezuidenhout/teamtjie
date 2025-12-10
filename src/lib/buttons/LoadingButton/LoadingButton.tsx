@@ -3,7 +3,7 @@
 import { ICONS } from '@/lib/icons/icons';
 import { Button, ButtonProps, Flex, Icon, Spinner, Text } from '@chakra-ui/react';
 import { motion, useAnimate } from 'framer-motion';
-import { PropsWithChildren, useEffect, useState } from 'react';
+import { PropsWithChildren, useEffect, useState, useCallback } from 'react';
 
 interface LoadingButtonProps extends ButtonProps, PropsWithChildren {
     loadingText?: string;
@@ -15,7 +15,7 @@ export const LoadingButton = ({ children, loadingText, isLoading, onClick, ...pr
     const [scope, animate] = useAnimate();
     const [loading, setLoading] = useState(!isLoading);
 
-    const animateLoadingTransition = () =>
+    const animateLoadingTransition = useCallback(() =>
         loading
             ? animate([
                 ['.loadingState', { opacity: 0 }, { duration: 0.1 }]
@@ -26,7 +26,7 @@ export const LoadingButton = ({ children, loadingText, isLoading, onClick, ...pr
                 ['.continueState', { opacity: 0 }, { duration: 0.1 }]
             ]).then(() => {
                 setLoading(true);
-            });
+            }), [loading, animate]);
 
     const handleHoverStart = () =>
         animate([
@@ -45,7 +45,7 @@ export const LoadingButton = ({ children, loadingText, isLoading, onClick, ...pr
 
     useEffect(() => {
         animateLoadingTransition();
-    }, [isLoading]);
+    }, [isLoading, animateLoadingTransition]);
 
     return (
         <motion.span ref={scope} onHoverStart={handleHoverStart} onHoverEnd={handleHoverEnd} style={{ width: 'inherit' }}>

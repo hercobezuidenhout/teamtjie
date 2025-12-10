@@ -58,7 +58,7 @@ export const EditScopeValueModal = ({ isOpen, onClose, value }: EditScopeValueMo
         return () => {
             reset();
         };
-    }, []);
+    }, [reset]);
 
     return (
         <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'full', md: 'lg' }}>

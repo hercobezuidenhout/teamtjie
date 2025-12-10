@@ -37,7 +37,7 @@ const SpacesLayout = async ({ children, menu, params }: SpacesLayoutProps) => {
 
   // Check if user has access to this scope
   const numericSpaceId = Number(spaceId);
-  const userHasAccess = data.scopes.some((scope: any) => scope.id === numericSpaceId);
+  const userHasAccess = data.scopes.some((scope: { id: number }) => scope.id === numericSpaceId);
 
   if (!userHasAccess) {
     // User doesn't have access to this scope (deleted or no permission)

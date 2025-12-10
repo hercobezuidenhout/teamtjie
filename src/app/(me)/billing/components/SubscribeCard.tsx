@@ -35,7 +35,7 @@ interface SubscribeCardProps {
 export function SubscribeCard({ userEmail, userName, userScopes }: SubscribeCardProps) {
     const [isLoading, setIsLoading] = useState(false);
     const [showTeamSelection, setShowTeamSelection] = useState(false);
-    const [PaystackPop, setPaystackPop] = useState<any>(null);
+    const [PaystackPop, setPaystackPop] = useState<unknown>(null);
     const toast = useToast();
     const queryClient = useQueryClient();
 
@@ -123,7 +123,18 @@ export function SubscribeCard({ userEmail, userName, userScopes }: SubscribeCard
             const reference = createResponse.reference;
 
             // Step 2: Show Paystack popup with backend-generated reference
-            const paystack = new PaystackPop();
+            const paystack = new (PaystackPop as new () => {
+                newTransaction: (config: {
+                    key: string;
+                    email: string;
+                    amount: number;
+                    currency: string;
+                    ref: string;
+                    metadata: Record<string, unknown>;
+                    onSuccess: (transaction: { reference: string }) => void;
+                    onCancel: () => void;
+                }) => void;
+            })();
             paystack.newTransaction({
                 key: BILLING_CONFIG.paystack.publicKey,
                 email: userEmail,

@@ -137,7 +137,7 @@ function hasValidPeriodEnd(subscription: { currentPeriodEnd: Date | null }): boo
 async function logSubscriptionTransaction(
   subscription: { id: number; currency: string },
   type: TransactionType,
-  data: any,
+  data: Record<string, unknown>,
   reference?: string
 ) {
   return createSubscriptionTransaction({

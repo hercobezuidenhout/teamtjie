@@ -4,7 +4,7 @@ import { Resend } from "resend";
 interface Email {
     recipients: string[];
     subject: string;
-    template: any;
+    template: React.ReactElement;
     scopeId: number;
 }
 

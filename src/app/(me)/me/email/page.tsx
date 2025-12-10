@@ -64,7 +64,7 @@ const Page = () => {
                 setEmail(data.user?.email ?? '');
                 setUser(data.user ?? undefined);
             });
-    }, []);
+    }, [auth]);
 
     return (
         <>

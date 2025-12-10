@@ -53,10 +53,10 @@ export function TeamBillingStatus({
                 duration: 3000,
                 isClosable: true,
             });
-        } catch (error: any) {
+        } catch (error: unknown) {
             toast({
                 title: 'Error',
-                description: error?.message || 'Failed to add team',
+                description: error instanceof Error ? error.message : 'Failed to add team',
                 status: 'error',
                 duration: 5000,
                 isClosable: true,

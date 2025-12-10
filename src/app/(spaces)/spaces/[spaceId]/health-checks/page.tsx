@@ -152,7 +152,7 @@ export default function HealthChecksPage() {
       )}
 
       {validHealthChecks.length === 0 && (
-        <Card>
+        <Card width="full">
           <CardBody>
             <VStack py={8}>
               <Text color="chakra-subtle-text">No health checks yet</Text>

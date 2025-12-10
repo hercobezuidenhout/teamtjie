@@ -4,7 +4,7 @@ import { VStackStretch } from "@/lib/layout/VStackStretch";
 import { Card, CardBody, CardFooter, CardHeader, Flex, HStack, Heading, Icon, IconButton, Text, useDisclosure, useToast } from "@chakra-ui/react";
 import { BackToAccountButton } from "../components/BackToAccountButton/BackToAccountButton";
 import { User, useSupabaseClient } from "@supabase/auth-helpers-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { FaMicrosoft } from "react-icons/fa6";
 import { FiTrash } from "react-icons/fi";
 import { ConfirmationModal } from "@/lib/modals/ConfirmationModal/ConfirmationModal";
@@ -19,11 +19,11 @@ const Page = () => {
 
     const [user, setUser] = useState<User>();
 
-    const refreshUser = () => auth
+    const refreshUser = useCallback(() => auth
         .getUser()
         .then(({ data }) => {
             setUser(data.user ?? undefined);
-        });
+        }), [auth]);
 
     const handleClick = (identity: UserIdentity) => {
         console.info(identity);
@@ -56,7 +56,7 @@ const Page = () => {
 
     useEffect(() => {
         refreshUser();
-    }, []);
+    }, [refreshUser]);
 
     return (
         <>

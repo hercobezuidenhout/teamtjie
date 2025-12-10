@@ -29,10 +29,16 @@ export const dynamic = 'force-dynamic';
  */
 export async function POST(request: NextRequest) {
   try {
+    console.log('========================================');
+    console.log('📥 WEBHOOK RECEIVED');
+    console.log('========================================');
+
     // Get signature from header
     const signature = request.headers.get('x-paystack-signature');
+    console.log('🔐 Signature present:', !!signature);
+
     if (!signature) {
-      console.error('Webhook missing signature');
+      console.error('❌ Webhook missing signature');
       return NextResponse.json(
         { error: 'Missing signature' },
         { status: 401 }
@@ -41,20 +47,23 @@ export async function POST(request: NextRequest) {
 
     // Get raw body
     const body = await request.text();
+    console.log('📦 Body length:', body.length);
 
     // Parse and verify webhook
     const { valid, event, error } = parsePaystackWebhook(body, signature);
+    console.log('✅ Signature valid:', valid);
 
     if (!valid || !event) {
-      console.error('Invalid webhook:', error);
+      console.error('❌ Invalid webhook:', error);
       return NextResponse.json(
         { error: error || 'Invalid webhook' },
         { status: 400 }
       );
     }
 
-    // Log webhook event
-    console.log('Paystack webhook received:', event.event);
+    // Log webhook event details
+    console.log('📨 Event Type:', event.event);
+    console.log('📋 Event Data:', JSON.stringify(event.data, null, 2));
 
     // Handle different event types
     switch (event.event) {
@@ -176,42 +185,53 @@ async function logSubscriptionTransaction(
  * Handle successful payment (initial or recurring)
  */
 async function handleChargeSuccess(event: PaystackWebhookEvent) {
+  console.log('💰 Processing charge.success');
   const { data } = event;
   const reference = data.reference;
+  console.log('   Reference:', reference);
+  console.log('   Amount:', data.amount, 'kobo (R' + (data.amount / 100) + ')');
 
   // Verify payment is actually successful
   if (!isPaymentSuccessful(data)) {
-    console.error('Payment not successful:', reference);
+    console.error('❌ Payment not successful:', reference);
     return;
   }
+  console.log('✅ Payment verified as successful');
 
   // Validate amount
   if (!validatePaymentAmount(data.amount)) {
-    console.error('Invalid payment amount:', data.amount, 'expected:', 9900);
+    console.error('❌ Invalid payment amount:', data.amount, 'expected:', 9900);
     return;
   }
+  console.log('✅ Amount validated');
 
   // Extract metadata
   const metadata = extractPaystackMetadata(data);
+  console.log('📋 Metadata:', metadata);
 
   // Try to find subscription by reference first (initial payment)
   let subscription = await getSubscriptionByReference(reference);
+  console.log('🔍 Subscription by reference:', subscription ? `Found (ID: ${subscription.id})` : 'Not found');
 
   // If not found by reference, try by subscription code (recurring payment)
   if (!subscription && metadata.subscriptionCode) {
     subscription = await prisma.subscription.findUnique({
       where: { externalSubscriptionId: metadata.subscriptionCode },
     });
+    console.log('🔍 Subscription by code:', subscription ? `Found (ID: ${subscription.id})` : 'Not found');
   }
 
   if (!subscription) {
-    console.error('Subscription not found for reference:', reference);
+    console.error('❌ Subscription not found for reference:', reference);
     return;
   }
 
+  console.log('📊 Current subscription status:', subscription.status);
+  console.log('📊 Cancel at period end:', subscription.cancelAtPeriodEnd);
+
   // Handle based on current status
   if (subscription.status === SubscriptionStatus.PENDING) {
-    // Initial payment - activate subscription
+    console.log('🎉 Activating PENDING subscription');
     const { periodStart, periodEnd } = calculateNextBillingDate();
 
     await activateSubscription({
@@ -222,25 +242,26 @@ async function handleChargeSuccess(event: PaystackWebhookEvent) {
       periodEnd,
     });
 
-    console.log('Subscription activated via webhook:', subscription.id);
+    console.log('✅ Subscription activated:', subscription.id);
+    console.log('   Period:', periodStart, 'to', periodEnd);
   } else if (subscription.status === SubscriptionStatus.ACTIVE) {
-    // Recurring payment - extend billing period
+    console.log('🔄 Processing recurring payment for ACTIVE subscription');
     if (subscription.currentPeriodEnd) {
       const { periodStart, periodEnd } = calculateNextBillingDate(
         subscription.currentPeriodEnd
       );
 
       await updateSubscriptionPeriod(subscription.id, periodStart, periodEnd);
+      console.log('✅ Subscription period extended:', subscription.id);
+      console.log('   New period:', periodStart, 'to', periodEnd);
 
       // Reset cancellation flag if payment succeeds after user cancelled
       if (subscription.cancelAtPeriodEnd) {
         await resetCancellationFlag(subscription.id);
-        console.log('Subscription re-enabled, cancellation flag reset:', subscription.id);
+        console.log('🔄 Subscription re-enabled, cancellation flag reset:', subscription.id);
       }
-
-      console.log('Subscription period extended:', subscription.id);
     } else {
-      console.log('Subscription already active, no period to extend:', subscription.id);
+      console.log('⚠️  Subscription already active, no period to extend:', subscription.id);
     }
   }
 
@@ -254,6 +275,8 @@ async function handleChargeSuccess(event: PaystackWebhookEvent) {
     externalMetadata: data as Prisma.InputJsonValue,
     processedAt: data.paid_at ? new Date(data.paid_at) : new Date(),
   });
+  console.log('✅ Transaction record created');
+  console.log('========================================');
 }
 
 /**
@@ -294,17 +317,29 @@ async function handleSubscriptionCreate(event: PaystackWebhookEvent) {
  * This is the event that fires immediately when user cancels on Paystack
  */
 async function handleSubscriptionNotRenew(event: PaystackWebhookEvent) {
+  console.log('🚫 Processing subscription.not_renew (User cancelled)');
   const { data } = event;
+  const subscriptionCode = data.subscription?.subscription_code;
+  console.log('   Subscription Code:', subscriptionCode);
 
   const subscription = await findSubscriptionByCode(
-    data.subscription?.subscription_code,
+    subscriptionCode,
     'not_renew event'
   );
-  if (!subscription) return;
+  if (!subscription) {
+    console.error('❌ Subscription not found');
+    return;
+  }
+
+  console.log('📊 Found subscription:', subscription.id);
+  console.log('   Current status:', subscription.status);
+  console.log('   Current cancelAtPeriodEnd:', subscription.cancelAtPeriodEnd);
 
   // Mark subscription to cancel at period end (keep active until then)
   await cancelSubscription(subscription.id, true); // cancelAtPeriodEnd = true
-  console.log('Subscription marked to not renew (cancel at period end):', subscription.id);
+  console.log('✅ Subscription marked to not renew (cancelAtPeriodEnd = true)');
+  console.log('   Subscription ID:', subscription.id);
+  console.log('   Will remain active until:', subscription.currentPeriodEnd);
 
   // Create transaction record
   await logSubscriptionTransaction(
@@ -312,6 +347,8 @@ async function handleSubscriptionNotRenew(event: PaystackWebhookEvent) {
     TransactionType.SUBSCRIPTION_CANCELLED,
     data
   );
+  console.log('✅ Transaction record created');
+  console.log('========================================');
 }
 
 /**
@@ -319,23 +356,33 @@ async function handleSubscriptionNotRenew(event: PaystackWebhookEvent) {
  * Fired on next payment date after cancellation, or when subscription completes
  */
 async function handleSubscriptionDisable(event: PaystackWebhookEvent) {
+  console.log('🛑 Processing subscription.disable');
   const { data } = event;
+  const subscriptionCode = data.subscription?.subscription_code;
+  console.log('   Subscription Code:', subscriptionCode);
 
   const subscription = await findSubscriptionByCode(
-    data.subscription?.subscription_code,
-    'cancellation event'
+    subscriptionCode,
+    'disable event'
   );
-  if (!subscription) return;
+  if (!subscription) {
+    console.error('❌ Subscription not found');
+    return;
+  }
+
+  console.log('📊 Found subscription:', subscription.id);
+  console.log('   Current status:', subscription.status);
+  console.log('   Period end:', subscription.currentPeriodEnd);
 
   // Check if subscription has a billing period end date
   if (hasValidPeriodEnd(subscription)) {
-    // Cancel at period end - keep subscription active
+    console.log('⏰ Valid period end exists, marking to cancel at period end');
     await cancelSubscription(subscription.id, true); // cancelAtPeriodEnd = true
-    console.log('Subscription marked to cancel at period end:', subscription.id);
+    console.log('✅ Subscription marked to cancel at period end:', subscription.id);
   } else {
-    // No valid period end or already expired - cancel immediately
+    console.log('⚡ No valid period end, cancelling immediately');
     await updateSubscriptionStatus(subscription.id, SubscriptionStatus.CANCELLED);
-    console.log('Subscription cancelled immediately:', subscription.id);
+    console.log('✅ Subscription cancelled immediately:', subscription.id);
   }
 
   // Create transaction record
@@ -344,6 +391,8 @@ async function handleSubscriptionDisable(event: PaystackWebhookEvent) {
     TransactionType.SUBSCRIPTION_CANCELLED,
     data
   );
+  console.log('✅ Transaction record created');
+  console.log('========================================');
 }
 
 /**
@@ -351,19 +400,29 @@ async function handleSubscriptionDisable(event: PaystackWebhookEvent) {
  * This can occur when a cancelled subscription reaches its renewal date
  */
 async function handleChargeFailed(event: PaystackWebhookEvent) {
+  console.log('❌ Processing charge.failed');
   const { data } = event;
   const metadata = extractPaystackMetadata(data);
+  console.log('   Reference:', data.reference);
+  console.log('   Subscription Code:', metadata.subscriptionCode);
 
   const subscription = await findSubscriptionByCode(
     metadata.subscriptionCode,
     'failed charge event'
   );
-  if (!subscription) return;
+  if (!subscription) {
+    console.error('❌ Subscription not found');
+    return;
+  }
+
+  console.log('📊 Found subscription:', subscription.id);
+  console.log('   Cancel at period end:', subscription.cancelAtPeriodEnd);
 
   // If subscription was marked to cancel at period end, now mark it as cancelled
   if (subscription.cancelAtPeriodEnd) {
+    console.log('⚡ Subscription was marked to cancel, now expiring');
     await updateSubscriptionStatus(subscription.id, SubscriptionStatus.CANCELLED);
-    console.log('Subscription expired after cancellation:', subscription.id);
+    console.log('✅ Subscription expired after cancellation:', subscription.id);
 
     // Create transaction record
     await logSubscriptionTransaction(
@@ -372,10 +431,12 @@ async function handleChargeFailed(event: PaystackWebhookEvent) {
       data,
       data.reference
     );
+    console.log('✅ Transaction record created');
   } else {
-    console.log('Payment failed for active subscription:', subscription.id);
-    // Could send notification to user about payment failure
+    console.log('⚠️  Payment failed for active subscription:', subscription.id);
+    console.log('   This may require user attention');
   }
+  console.log('========================================');
 }
 
 /**
@@ -383,9 +444,11 @@ async function handleChargeFailed(event: PaystackWebhookEvent) {
  * Sent 3 days before next payment date
  */
 async function handleInvoiceCreate(event: PaystackWebhookEvent) {
+  console.log('📄 Processing invoice.create (Payment in 3 days)');
   const { data } = event;
-
-  console.log('Invoice created (payment in 3 days):', data.subscription?.subscription_code);
+  console.log('   Subscription Code:', data.subscription?.subscription_code);
+  console.log('   Amount:', data.amount);
+  console.log('========================================');
 
   // Optional: Send notification to user about upcoming charge
   // This is a good place to remind users their subscription will renew
@@ -396,13 +459,12 @@ async function handleInvoiceCreate(event: PaystackWebhookEvent) {
  * Sent after charge attempt with final invoice status
  */
 async function handleInvoiceUpdate(event: PaystackWebhookEvent) {
+  console.log('📝 Processing invoice.update');
   const { data } = event;
-
-  console.log('Invoice updated:', {
-    subscriptionCode: data.subscription?.subscription_code,
-    status: data.status,
-    paid: data.paid,
-  });
+  console.log('   Subscription Code:', data.subscription?.subscription_code);
+  console.log('   Status:', data.status);
+  console.log('   Paid:', data.paid);
+  console.log('========================================');
 
   // Optional: Log invoice status for record-keeping
   // The charge.success or invoice.payment_failed events handle the actual logic
@@ -413,15 +475,23 @@ async function handleInvoiceUpdate(event: PaystackWebhookEvent) {
  * Sent when recurring payment fails
  */
 async function handleInvoicePaymentFailed(event: PaystackWebhookEvent) {
+  console.log('💸 Processing invoice.payment_failed');
   const { data } = event;
+  const subscriptionCode = data.subscription?.subscription_code;
+  console.log('   Subscription Code:', subscriptionCode);
 
   const subscription = await findSubscriptionByCode(
-    data.subscription?.subscription_code,
+    subscriptionCode,
     'invoice payment failed event'
   );
-  if (!subscription) return;
+  if (!subscription) {
+    console.error('❌ Subscription not found');
+    return;
+  }
 
-  console.log('Invoice payment failed for subscription:', subscription.id);
+  console.log('📊 Found subscription:', subscription.id);
+  console.log('⚠️  Invoice payment failed for subscription:', subscription.id);
+  console.log('   Paystack will retry automatically');
 
   // Create transaction record
   await logSubscriptionTransaction(
@@ -429,6 +499,8 @@ async function handleInvoicePaymentFailed(event: PaystackWebhookEvent) {
     TransactionType.PAYMENT_FAILED,
     data
   );
+  console.log('✅ Transaction record created');
+  console.log('========================================');
 
   // Optional: Send notification to user about failed payment
   // Paystack will retry automatically, so we just log it

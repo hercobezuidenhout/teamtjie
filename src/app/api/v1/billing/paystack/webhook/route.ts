@@ -11,6 +11,7 @@ import {
   activateSubscription,
   cancelSubscription,
   createSubscriptionTransaction,
+  resetCancellationFlag,
   updateSubscriptionStatus,
   updateSubscriptionPeriod,
 } from '@/prisma/commands/subscription-commands';
@@ -92,6 +93,68 @@ export async function POST(request: NextRequest) {
   }
 }
 
+// ============================================================================
+// Helper Functions
+// ============================================================================
+
+/**
+ * Find subscription by external subscription code
+ * Returns null if not found or code is missing
+ */
+async function findSubscriptionByCode(
+  subscriptionCode: string | undefined,
+  context: string
+) {
+  if (!subscriptionCode) {
+    console.error(`No subscription code in ${context}`);
+    return null;
+  }
+
+  const subscription = await prisma.subscription.findUnique({
+    where: { externalSubscriptionId: subscriptionCode },
+  });
+
+  if (!subscription) {
+    console.error(`Subscription not found for ${context}:`, subscriptionCode);
+  }
+
+  return subscription;
+}
+
+/**
+ * Check if subscription has a valid period end date (in the future)
+ */
+function hasValidPeriodEnd(subscription: { currentPeriodEnd: Date | null }): boolean {
+  return !!(
+    subscription.currentPeriodEnd &&
+    subscription.currentPeriodEnd > new Date()
+  );
+}
+
+/**
+ * Log a subscription status change transaction
+ */
+async function logSubscriptionTransaction(
+  subscription: { id: number; currency: string },
+  type: TransactionType,
+  data: any,
+  reference?: string
+) {
+  return createSubscriptionTransaction({
+    subscriptionId: subscription.id,
+    type,
+    amount: 0, // Status changes always log 0 amount
+    currency: subscription.currency,
+    externalPaymentId: reference || data.subscription?.subscription_code || data.reference,
+    externalMetadata: data,
+    processedAt: new Date(),
+  });
+}
+
+// ============================================================================
+// Webhook Event Handlers
+// ============================================================================
+
 /**
  * Handle successful payment (initial or recurring)
  */
@@ -154,10 +217,7 @@ async function handleChargeSuccess(event: PaystackWebhookEvent) {
 
       // Reset cancellation flag if payment succeeds after user cancelled
       if (subscription.cancelAtPeriodEnd) {
-        await prisma.subscription.update({
-          where: { id: subscription.id },
-          data: { cancelAtPeriodEnd: false },
-        });
+        await resetCancellationFlag(subscription.id);
         console.log('Subscription re-enabled, cancellation flag reset:', subscription.id);
       }
 
@@ -216,25 +276,15 @@ async function handleSubscriptionCreate(event: PaystackWebhookEvent) {
  */
 async function handleSubscriptionDisable(event: PaystackWebhookEvent) {
   const { data } = event;
-  const subscriptionCode = data.subscription?.subscription_code;
 
-  if (!subscriptionCode) {
-    console.error('No subscription code in cancellation event');
-    return;
-  }
-
-  // Find subscription by external ID
-  const subscription = await prisma.subscription.findUnique({
-    where: { externalSubscriptionId: subscriptionCode },
-  });
-
-  if (!subscription) {
-    console.error('Subscription not found:', subscriptionCode);
-    return;
-  }
+  const subscription = await findSubscriptionByCode(
+    data.subscription?.subscription_code,
+    'cancellation event'
+  );
+  if (!subscription) return;
 
   // Check if subscription has a billing period end date
-  if (subscription.currentPeriodEnd && subscription.currentPeriodEnd > new Date()) {
+  if (hasValidPeriodEnd(subscription)) {
     // Cancel at period end - keep subscription active
     await cancelSubscription(subscription.id, true); // cancelAtPeriodEnd = true
     console.log('Subscription marked to cancel at period end:', subscription.id);
@@ -245,15 +295,11 @@ async function handleSubscriptionDisable(event: PaystackWebhookEvent) {
   }
 
   // Create transaction record
-  await createSubscriptionTransaction({
-    subscriptionId: subscription.id,
-    type: TransactionType.SUBSCRIPTION_CANCELLED,
-    amount: 0,
-    currency: subscription.currency,
-    externalPaymentId: subscriptionCode,
-    externalMetadata: data,
-    processedAt: new Date(),
-  });
+  await logSubscriptionTransaction(
+    subscription,
+    TransactionType.SUBSCRIPTION_CANCELLED,
+    data
+  );
 }
 
 /**
@@ -264,20 +310,11 @@ async function handleChargeFailed(event: PaystackWebhookEvent) {
   const { data } = event;
   const metadata = extractPaystackMetadata(data);
 
-  // Try to find subscription by subscription code
-  if (!metadata.subscriptionCode) {
-    console.log('No subscription code in failed charge event');
-    return;
-  }
-
-  const subscription = await prisma.subscription.findUnique({
-    where: { externalSubscriptionId: metadata.subscriptionCode },
-  });
-
-  if (!subscription) {
-    console.log('Subscription not found for failed charge:', metadata.subscriptionCode);
-    return;
-  }
+  const subscription = await findSubscriptionByCode(
+    metadata.subscriptionCode,
+    'failed charge event'
+  );
+  if (!subscription) return;
 
   // If subscription was marked to cancel at period end, now mark it as cancelled
   if (subscription.cancelAtPeriodEnd) {
@@ -285,15 +322,12 @@ async function handleChargeFailed(event: PaystackWebhookEvent) {
     console.log('Subscription expired after cancellation:', subscription.id);
 
     // Create transaction record
-    await createSubscriptionTransaction({
-      subscriptionId: subscription.id,
-      type: TransactionType.PAYMENT_FAILED,
-      amount: 0,
-      currency: subscription.currency,
-      externalPaymentId: data.reference,
-      externalMetadata: data,
-      processedAt: new Date(),
-    });
+    await logSubscriptionTransaction(
+      subscription,
+      TransactionType.PAYMENT_FAILED,
+      data,
+      data.reference
+    );
   } else {
     console.log('Payment failed for active subscription:', subscription.id);
     // Could send notification to user about payment failure

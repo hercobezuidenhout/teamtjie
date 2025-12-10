@@ -69,6 +69,13 @@ export async function cancelSubscription(
     });
 }
 
+export async function resetCancellationFlag(subscriptionId: number) {
+    return prisma.subscription.update({
+        where: { id: subscriptionId },
+        data: { cancelAtPeriodEnd: false },
+    });
+}
+
 export interface CreateTransactionData {
     subscriptionId: number;
     type: TransactionType;

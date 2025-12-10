@@ -66,12 +66,28 @@ export async function POST(request: NextRequest) {
         await handleSubscriptionCreate(event);
         break;
 
+      case 'subscription.not_renew':
+        await handleSubscriptionNotRenew(event);
+        break;
+
       case 'subscription.disable':
         await handleSubscriptionDisable(event);
         break;
 
       case 'charge.failed':
         await handleChargeFailed(event);
+        break;
+
+      case 'invoice.create':
+        await handleInvoiceCreate(event);
+        break;
+
+      case 'invoice.update':
+        await handleInvoiceUpdate(event);
+        break;
+
+      case 'invoice.payment_failed':
+        await handleInvoicePaymentFailed(event);
         break;
 
       default:
@@ -125,7 +141,7 @@ async function findSubscriptionByCode(
 /**
  * Check if subscription has a valid period end date (in the future)
  */
-function hasValidPeriodEnd(subscription: { currentPeriodEnd: Date | null }): boolean {
+function hasValidPeriodEnd(subscription: { currentPeriodEnd: Date | null; }): boolean {
   return !!(
     subscription.currentPeriodEnd &&
     subscription.currentPeriodEnd > new Date()
@@ -136,7 +152,7 @@ function hasValidPeriodEnd(subscription: { currentPeriodEnd: Date | null }): boo
  * Log a subscription status change transaction
  */
 async function logSubscriptionTransaction(
-  subscription: { id: number; currency: string },
+  subscription: { id: number; currency: string; },
   type: TransactionType,
   data: PaystackWebhookEvent['data'],
   reference?: string
@@ -236,7 +252,7 @@ async function handleChargeSuccess(event: PaystackWebhookEvent) {
     currency: (data.metadata?.currency as string | undefined) || 'ZAR',
     externalPaymentId: reference,
     externalMetadata: data as Prisma.InputJsonValue,
-    processedAt: new Date(data.paid_at),
+    processedAt: data.paid_at ? new Date(data.paid_at) : new Date(),
   });
 }
 
@@ -273,7 +289,34 @@ async function handleSubscriptionCreate(event: PaystackWebhookEvent) {
 }
 
 /**
- * Handle subscription cancellation
+ * Handle subscription.not_renew event
+ * Fired when user cancels subscription (before it actually disables)
+ * This is the event that fires immediately when user cancels on Paystack
+ */
+async function handleSubscriptionNotRenew(event: PaystackWebhookEvent) {
+  const { data } = event;
+
+  const subscription = await findSubscriptionByCode(
+    data.subscription?.subscription_code,
+    'not_renew event'
+  );
+  if (!subscription) return;
+
+  // Mark subscription to cancel at period end (keep active until then)
+  await cancelSubscription(subscription.id, true); // cancelAtPeriodEnd = true
+  console.log('Subscription marked to not renew (cancel at period end):', subscription.id);
+
+  // Create transaction record
+  await logSubscriptionTransaction(
+    subscription,
+    TransactionType.SUBSCRIPTION_CANCELLED,
+    data
+  );
+}
+
+/**
+ * Handle subscription cancellation/completion
+ * Fired on next payment date after cancellation, or when subscription completes
  */
 async function handleSubscriptionDisable(event: PaystackWebhookEvent) {
   const { data } = event;
@@ -333,4 +376,60 @@ async function handleChargeFailed(event: PaystackWebhookEvent) {
     console.log('Payment failed for active subscription:', subscription.id);
     // Could send notification to user about payment failure
   }
+}
+
+/**
+ * Handle invoice.create event
+ * Sent 3 days before next payment date
+ */
+async function handleInvoiceCreate(event: PaystackWebhookEvent) {
+  const { data } = event;
+
+  console.log('Invoice created (payment in 3 days):', data.subscription?.subscription_code);
+
+  // Optional: Send notification to user about upcoming charge
+  // This is a good place to remind users their subscription will renew
+}
+
+/**
+ * Handle invoice.update event
+ * Sent after charge attempt with final invoice status
+ */
+async function handleInvoiceUpdate(event: PaystackWebhookEvent) {
+  const { data } = event;
+
+  console.log('Invoice updated:', {
+    subscriptionCode: data.subscription?.subscription_code,
+    status: data.status,
+    paid: data.paid,
+  });
+
+  // Optional: Log invoice status for record-keeping
+  // The charge.success or invoice.payment_failed events handle the actual logic
+}
+
+/**
+ * Handle invoice.payment_failed event
+ * Sent when recurring payment fails
+ */
+async function handleInvoicePaymentFailed(event: PaystackWebhookEvent) {
+  const { data } = event;
+
+  const subscription = await findSubscriptionByCode(
+    data.subscription?.subscription_code,
+    'invoice payment failed event'
+  );
+  if (!subscription) return;
+
+  console.log('Invoice payment failed for subscription:', subscription.id);
+
+  // Create transaction record
+  await logSubscriptionTransaction(
+    subscription,
+    TransactionType.PAYMENT_FAILED,
+    data
+  );
+
+  // Optional: Send notification to user about failed payment
+  // Paystack will retry automatically, so we just log it
 }

@@ -1,0 +1,87 @@
+meta {
+  name: Test Webhook - Charge Failed
+  type: http
+  seq: 10
+}
+
+post {
+  url: {{BASE_URL}}/api/v1/billing/paystack/webhook
+  body: json
+  auth: none
+}
+
+headers {
+  x-paystack-signature: {{WEBHOOK_SIGNATURE}}
+}
+
+body:json {
+  {
+    "event": "charge.failed",
+    "data": {
+      "reference": "test_ref_failed_{{$timestamp}}",
+      "amount": 9900,
+      "currency": "ZAR",
+      "status": "failed",
+      "gateway_response": "Insufficient Funds",
+      "customer": {
+        "email": "test@example.com",
+        "customer_code": "CUS_test123"
+      },
+      "metadata": {
+        "subscriptionCode": "SUB_test123",
+        "customerCode": "CUS_test123"
+      }
+    }
+  }
+}
+
+script:pre-request {
+  const crypto = require('crypto');
+  const body = req.getBody();
+  const secret = bru.getEnvVar('PAYSTACK_SECRET_KEY');
+  
+  // Convert body to string (Paystack signs the raw JSON string)
+  const bodyString = typeof body === 'string' ? body : JSON.stringify(body);
+  
+  // Generate HMAC SHA512 signature
+  const signature = crypto
+    .createHmac('sha512', secret)
+    .update(bodyString)
+    .digest('hex');
+  
+  bru.setVar('WEBHOOK_SIGNATURE', signature);
+  
+  console.log('Generated signature:', signature);
+  console.log('Body length:', bodyString.length);
+}
+
+docs {
+  # Test Webhook - Charge Failed
+  
+  Simulates a failed payment webhook from Paystack.
+  
+  ## What it tests
+  - Webhook signature verification
+  - Failed payment handling
+  - Subscription expiry after cancellation
+  - Transaction record creation
+  
+  ## Prerequisites
+  - Have a subscription with `cancelAtPeriodEnd = true`
+  
+  ## Expected Response
+  ```json
+  {
+    "success": true
+  }
+  ```
+  
+  ## Behavior
+  - If subscription has `cancelAtPeriodEnd = true`: Sets status to CANCELLED
+  - Otherwise: Logs the failure (could trigger notification)
+  
+  ## Notes
+  - Signature is auto-generated in pre-request script
+  - Simulates insufficient funds scenario
+  - Check server logs to see failure handling
+}

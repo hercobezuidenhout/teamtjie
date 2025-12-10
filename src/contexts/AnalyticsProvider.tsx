@@ -5,7 +5,7 @@ import mixpanel from 'mixpanel-browser';
 import { PropsWithChildren, createContext, useContext } from 'react';
 
 interface AnalyticsContextValue {
-    trackEvent: (event: string, metadata?: any) => void;
+    trackEvent: (event: string, metadata?: Record<string, unknown>) => void;
 }
 
 export const AnalyticsContext = createContext<AnalyticsContextValue>({
@@ -18,7 +18,7 @@ export const AnalyticsProvider = ({ children }: PropsWithChildren) => {
     mixpanel.init(process.env.NEXT_PUBLIC_MIXPANEL_TOKEN, { debug: true, track_pageview: true, persistence: 'localStorage', ignore_dnt: true });
 
 
-    const trackEvent = (event: string, metadata: any) => {
+    const trackEvent = (event: string, metadata?: Record<string, unknown>) => {
         if (session?.user.id) {
             mixpanel.identify(session.user.id);
         }

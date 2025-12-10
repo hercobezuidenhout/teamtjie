@@ -45,6 +45,7 @@ import {
 import { getScopeProfile } from '@/prisma/queries/get-scope-profile';
 import { updateScopeRole } from '@/prisma/commands/update-scope-role';
 import { RoleType, ScopeType } from '@prisma/client';
+import prisma from '@/prisma/prisma';
 import type { NextApiResponse } from 'next';
 import { UpdateScopeRoleDto } from '@/models/dtos/scope/update-scope-role';
 import { RemoveScopeRoleDto } from '@/models/dtos/scope/remove-scope-role';
@@ -82,6 +83,24 @@ class ScopesHandler {
         @Req() req: UserApiRequest & AbilitiesApiRequest,
         @Body(ValidationPipe) body: CreateScopeDto
     ) {
+        // Check team creation limit (max 3 teams per user)
+        const userTeamCount = await prisma.scope.count({
+            where: {
+                roles: {
+                    some: {
+                        userId: req.userId,
+                        role: RoleType.ADMIN,
+                    },
+                },
+            },
+        });
+
+        if (userTeamCount >= 3) {
+            throw new BadRequestException(
+                'Maximum 3 teams reached. You cannot create more teams.'
+            );
+        }
+
         if (body.type == ScopeType.TEAM) {
             if (body.parentScopeId) {
                 await validateChildCreate(req, body.parentScopeId, body.name);
@@ -368,6 +387,20 @@ class ScopesHandler {
                 (role) => role.scopeId === id && role.role === 'ADMIN'
             )
         ) {
+            // Check admin role limit (max 3 admin roles per user)
+            if (newRole === 'ADMIN' && currentRole !== 'ADMIN') {
+                const userAdminCount = await prisma.scopeRole.count({
+                    where: {
+                        userId,
+                        role: RoleType.ADMIN,
+                    },
+                });
+
+                if (userAdminCount >= 3) {
+                    return res.status(400).send('This user has reached the maximum of 3 admin roles.');
+                }
+            }
+
             await updateScopeRole({
                 scopeId: id,
                 userId,

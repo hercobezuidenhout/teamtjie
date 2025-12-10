@@ -1,17 +1,24 @@
 import { PageProps } from '@/app/page-props';
 import { VStack } from '@chakra-ui/react';
 import { getScopeProfile } from '@/prisma';
+import { hasActiveSubscription } from '@/prisma/queries/subscription-queries';
+import { getSession } from '@/app/utils';
 import { ScopeValues } from './components/ScopeValues/ScopeValues';
 import { ScopeMission } from './components/ScopeMission/ScopeMission';
 import { DailySentimentWidget } from './components/DailySentiment/DailySentimentWidget';
+import { DailySentimentPromo } from './components/DailySentiment/DailySentimentPromo';
 
 const Page = async ({ params }: PageProps) => {
     const scopeId = Number(params['spaceId']);
     const scope = await getScopeProfile(scopeId);
+    const session = await getSession();
+    const hasSubscription = session?.user?.id
+        ? await hasActiveSubscription(scopeId, session.user.id)
+        : false;
 
     return (
         <VStack align="stretch" gap={4}>
-            <DailySentimentWidget />
+            {hasSubscription ? <DailySentimentWidget /> : <DailySentimentPromo />}
             <ScopeMission mission={scope.description || undefined} />
             <ScopeValues id={scope.id} />
         </VStack>

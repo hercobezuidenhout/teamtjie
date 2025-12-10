@@ -3,7 +3,7 @@ import { getPostUsageForScope } from "@/prisma/queries/get-post-usage-for-scope"
 export const generatePostUsageInsights = async (scopeId: number, startDate: Date, endDate: Date) => {
     const postUsage = await getPostUsageForScope(Number(scopeId));
 
-    const dataMap = {};
+    const dataMap: Record<string, { date: string; wins: number }> = {};
 
     postUsage.forEach(entry => {
         const dateKey = entry.date;
@@ -17,7 +17,7 @@ export const generatePostUsageInsights = async (scopeId: number, startDate: Date
         }
     });
 
-    const dateArray: any = [];
+    const dateArray: Array<{ date: string; wins: number }> = [];
     const currentDate = startDate;
 
     while (currentDate <= endDate) {

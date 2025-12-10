@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSession } from '@/app/utils';
 import prisma from '@/prisma/prisma';
 import { DEFAULT_TEMPLATE } from '@/config/health-check-templates';
+import { requireSubscription, SubscriptionRequiredError } from '@/utils/require-subscription';
 
 export const dynamic = 'force-dynamic';
 
@@ -42,6 +43,19 @@ export async function GET(request: NextRequest) {
 
     if (!userRole) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    // Check subscription (Premium feature)
+    try {
+      await requireSubscription(numericScopeId, session.user.id);
+    } catch (error) {
+      if (error instanceof SubscriptionRequiredError) {
+        return NextResponse.json(
+          { error: error.message, requiresSubscription: true },
+          { status: 402 }
+        );
+      }
+      throw error;
     }
 
     // Get all health checks with user's response status
@@ -117,6 +131,19 @@ export async function POST(request: NextRequest) {
 
     if (!userRole) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    // Check subscription (Premium feature)
+    try {
+      await requireSubscription(numericScopeId, session.user.id);
+    } catch (error) {
+      if (error instanceof SubscriptionRequiredError) {
+        return NextResponse.json(
+          { error: error.message, requiresSubscription: true },
+          { status: 402 }
+        );
+      }
+      throw error;
     }
 
     // Create health check with questions from template

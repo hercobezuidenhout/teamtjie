@@ -44,6 +44,11 @@ export const ProfileMenu = () => {
             View Account
           </MenuItem>
         </Link>
+        <Link href={`/billing`}>
+          <MenuItem icon={<Icon as={ICONS.PayIcon} fontSize="lg" />}>
+            Billing
+          </MenuItem>
+        </Link>
         <MenuDivider />
         <MenuItem
           icon={<Icon as={ICONS.SignOutIcon} fontSize="lg" />}

@@ -15,6 +15,8 @@ import {
 import { useParams, useRouter } from 'next/navigation';
 import { useHealthChecksQuery } from '@/services/health-check/queries/use-health-checks-query';
 import { useCreateHealthCheckMutation } from '@/services/health-check/mutations/use-create-health-check-mutation';
+import { useSubscriptionQuery } from '@/services/subscription/queries/use-subscription-query';
+import { PremiumFeatureGate } from '@/lib/components/PremiumFeatureGate/PremiumFeatureGate';
 import { Can } from '@/lib/casl/Can';
 import { subject } from '@casl/ability';
 import { ICONS } from '@/lib/icons/icons';
@@ -26,8 +28,15 @@ export default function HealthChecksPage() {
   const toast = useToast();
   const scopeId = parseInt(params['spaceId'] as string, 10);
 
+  // Call all hooks at the top
+  const { data: subscriptionData, isLoading: subscriptionLoading } = useSubscriptionQuery(scopeId);
   const { data: healthChecks, isLoading } = useHealthChecksQuery({ scopeId });
   const createMutation = useCreateHealthCheckMutation();
+
+  // Show premium gate if no subscription
+  if (!subscriptionLoading && !subscriptionData?.hasSubscription) {
+    return <PremiumFeatureGate featureName="Health Checks" />;
+  }
 
   const handleCreateHealthCheck = async () => {
     try {
@@ -143,7 +152,7 @@ export default function HealthChecksPage() {
       )}
 
       {validHealthChecks.length === 0 && (
-        <Card>
+        <Card width="full">
           <CardBody>
             <VStack py={8}>
               <Text color="chakra-subtle-text">No health checks yet</Text>

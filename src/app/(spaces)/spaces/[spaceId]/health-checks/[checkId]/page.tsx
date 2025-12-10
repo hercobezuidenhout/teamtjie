@@ -26,6 +26,8 @@ import { useParams, useRouter } from 'next/navigation';
 import { useState, useEffect, useRef } from 'react';
 import { useHealthCheckQuery } from '@/services/health-check/queries/use-health-check-query';
 import { useSaveResponseMutation } from '@/services/health-check/mutations/use-save-response-mutation';
+import { useSubscriptionQuery } from '@/services/subscription/queries/use-subscription-query';
+import { PremiumFeatureGate } from '@/lib/components/PremiumFeatureGate/PremiumFeatureGate';
 import { ICONS } from '@/lib/icons/icons';
 
 const sentimentEmojis = ['😟', '😐', '🙂', '😊', '😄'];
@@ -44,9 +46,10 @@ export default function HealthCheckPage() {
   const spaceId = parseInt(params['spaceId'] as string, 10);
   const checkId = parseInt(params['checkId'] as string, 10);
 
+  // Call all hooks at the top
+  const { data: subscriptionData, isLoading: subscriptionLoading } = useSubscriptionQuery(spaceId);
   const { data: healthCheck, isLoading } = useHealthCheckQuery({ healthCheckId: checkId });
   const saveResponseMutation = useSaveResponseMutation();
-
   const [currentStep, setCurrentStep] = useState(0);
   const [answers, setAnswers] = useState<Answer[]>([]);
   const [initialized, setInitialized] = useState(false);
@@ -79,6 +82,11 @@ export default function HealthCheckPage() {
   useEffect(() => {
     setInitialized(false);
   }, [checkId]);
+
+  // Show premium gate if no subscription
+  if (!subscriptionLoading && !subscriptionData?.hasSubscription) {
+    return <PremiumFeatureGate featureName="Health Checks" />;
+  }
 
   if (isLoading) {
     return (

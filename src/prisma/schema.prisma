@@ -39,6 +39,25 @@ enum NotificationType {
   IN_APP
 }
 
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELLED
+  EXPIRED
+  PENDING
+  FAILED
+}
+
+enum TransactionType {
+  PAYMENT_COMPLETE
+  PAYMENT_FAILED
+  SUBSCRIPTION_CANCELLED
+}
+
+enum SubscriptionType {
+  TEAMTJIE_PLUS
+  ENTERPRISE
+}
+
 // Models
 
 model User {
@@ -59,6 +78,7 @@ model User {
   dailySentiments         DailySentiment[]
   createdHealthChecks     HealthCheck[]
   healthCheckResponses    HealthCheckResponse[]
+  subscription            Subscription?
 }
 
 model DeactivateUser {
@@ -89,6 +109,7 @@ model Scope {
   dailySentiments      DailySentiment[]
   settings             ScopeSettings?
   healthChecks         HealthCheck[]
+  subscriptionScopes   SubscriptionScope[]
 }
 
 model ScopeValue {
@@ -305,4 +326,78 @@ model HealthCheckAnswer {
 
   @@unique([responseId, questionId])
   @@index([questionId])
+}
+
+model Subscription {
+  id                     Int                        @id @default(autoincrement())
+
+  // User-level subscription
+  userId                 String                     @unique
+  user                   User                       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subscriptionType       SubscriptionType           @default(TEAMTJIE_PLUS)
+
+  // Generic external references (no provider names)
+  reference              String                     @unique
+  externalCustomerId     String?
+  externalSubscriptionId String?                    @unique
+  externalMetadata       Json?
+
+  // Subscription details
+  status                 SubscriptionStatus         @default(PENDING)
+  amount                 Decimal                    @db.Decimal(10, 2)
+  currency               String                     @default("ZAR")
+  billingCycle           String                     @default("monthly")
+
+  // Billing period
+  currentPeriodStart     DateTime?
+  currentPeriodEnd       DateTime?
+  cancelAtPeriodEnd      Boolean                    @default(false)
+
+  // Audit
+  subscribedBy           String
+  createdAt              DateTime                   @default(now())
+  updatedAt              DateTime                   @updatedAt
+
+  // Relations
+  teams                  SubscriptionScope[]
+  transactions           SubscriptionTransaction[]
+
+  @@index([userId, status])
+  @@index([status, currentPeriodEnd])
+  @@index([reference])
+}
+
+model SubscriptionScope {
+  id             Int          @id @default(autoincrement())
+  subscriptionId Int
+  subscription   Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+  scopeId        Int          @unique
+  scope          Scope        @relation(fields: [scopeId], references: [id], onDelete: Cascade)
+  addedAt        DateTime     @default(now())
+  addedBy        String
+
+  @@index([subscriptionId])
+  @@index([scopeId])
+}
+
+model SubscriptionTransaction {
+  id                Int                @id @default(autoincrement())
+  subscriptionId    Int
+  subscription      Subscription       @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+
+  // Generic external references
+  externalPaymentId String?
+  externalMetadata  Json?
+
+  // Transaction details
+  type              TransactionType
+  amount            Decimal            @db.Decimal(10, 2)
+  currency          String
+  processedAt       DateTime?
+
+  // Audit
+  createdAt         DateTime           @default(now())
+
+  @@index([subscriptionId, createdAt(sort: Desc)])
+  @@index([externalPaymentId])
 }

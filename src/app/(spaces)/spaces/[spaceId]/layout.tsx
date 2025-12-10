@@ -10,7 +10,6 @@ import {
 } from '@tanstack/react-query';
 import { SpacesProviders } from './providers';
 import { redirect } from 'next/navigation';
-import { PageProps } from '@/app/page-props';
 import { getScopeProfile } from '@/prisma';
 import { SpaceNavigation } from './components/SpaceNavigation';
 import { NavDrawer } from './components/NavDrawer';
@@ -21,13 +20,14 @@ const mainHeight = `calc(100vh - ${headerHeight} - ${footerHeight})`;
 
 interface SpacesLayoutProps extends PropsWithChildren {
   menu: ReactNode;
+  params: { spaceId: string; };
 }
 
 /**
  * Layout for space pages
  * Note: Last visited space tracking is handled in middleware
  */
-const SpacesLayout = async ({ children, menu, params }: SpacesLayoutProps & PageProps) => {
+const SpacesLayout = async ({ children, menu, params }: SpacesLayoutProps) => {
   const data = await getUserAndScopes();
   const spaceId = params['spaceId'];
 
@@ -37,7 +37,7 @@ const SpacesLayout = async ({ children, menu, params }: SpacesLayoutProps & Page
 
   // Check if user has access to this scope
   const numericSpaceId = Number(spaceId);
-  const userHasAccess = data.scopes.some((scope: any) => scope.id === numericSpaceId);
+  const userHasAccess = data.scopes.some((scope: { id: number }) => scope.id === numericSpaceId);
 
   if (!userHasAccess) {
     // User doesn't have access to this scope (deleted or no permission)

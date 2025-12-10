@@ -4,7 +4,13 @@ import { Prisma } from '@prisma/client';
 const getData = async (userId: string) =>
   prisma.scope.findMany({
     where: { roles: { some: { userId: userId } } },
-    include: { scopeValues: { orderBy: { id: Prisma.SortOrder.asc } } },
+    include: {
+      scopeValues: { orderBy: { id: Prisma.SortOrder.asc } },
+      roles: {
+        where: { userId },
+        select: { role: true },
+      },
+    },
     orderBy: { name: 'asc' },
   });
 

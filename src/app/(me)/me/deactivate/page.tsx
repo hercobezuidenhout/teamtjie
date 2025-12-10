@@ -4,7 +4,7 @@ import { VStackStretch } from "@/lib/layout/VStackStretch";
 import { Button, Card, CardBody, CardFooter, CardHeader, FormControl, FormHelperText, FormLabel, HStack, Heading, Input, Text, useDisclosure, useToast } from "@chakra-ui/react";
 import { BackToAccountButton } from "../components/BackToAccountButton/BackToAccountButton";
 import { User, useSupabaseClient } from "@supabase/auth-helpers-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { ConfirmationModal } from "@/lib/modals/ConfirmationModal/ConfirmationModal";
 import { useDeleteUserMutation } from "@/services/user/mutations/use-delete-user-mutation";
 import { useRouter } from "next/navigation";
@@ -19,7 +19,7 @@ const Page = () => {
 
     const [user, setUser] = useState<User>();
 
-    const refreshUser = () => auth
+    const refreshUser = useCallback(() => auth
         .getUser()
         .then(({ data, error }) => {
             if (error) {
@@ -30,7 +30,7 @@ const Page = () => {
                 }
             }
             setUser(data.user ?? undefined);
-        });
+        }), [auth, router]);
 
     const handleCancel = () => {
         setEmail('');
@@ -62,7 +62,7 @@ const Page = () => {
 
     useEffect(() => {
         refreshUser();
-    }, []);
+    }, [refreshUser]);
 
     return (
         <>
